@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import CountdownTimer from "./components/CountdownTimer";
 import DecorativeFlipStrip from "./components/DecorativeFlipStrip";
 import FloatingIcons from "./components/FloatingIcons";
-import logo from "@/public/logo-transparent.png";
+import logo from "@/public/quad-logo-transparent.png";
 
 export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -62,7 +62,7 @@ export default function Home() {
   return (
     <main
       ref={rootRef}
-      className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background px-4 py-4"
+      className="relative flex h-dvh w-full flex-col items-center justify-center overflow-hidden bg-background px-4 py-4"
     >
       {/* Animated gradient blobs */}
       <motion.div
@@ -79,11 +79,11 @@ export default function Home() {
       <FloatingIcons />
 
       <div className="relative z-10 flex h-full w-full max-w-3xl flex-col items-center justify-center text-center">
-        <div className="gsap-logo mb-4 h-32 w-32 sm:h-20 sm:w-20">
+        <div className="gsap-logo mb-4 h-40 w-40 sm:h-56 sm:w-56 md:h-24 md:w-44">
           <Image
             src={logo}
             alt="QuadSyntax logo"
-            className="h-full w-full object-contain drop-shadow-[0_0_25px_rgba(109,53,221,0.55)]"
+            className="h-full w-full object-cover drop-shadow-[0_0_25px_rgba(109,53,221,0.55)]"
             priority
           />
         </div>
@@ -97,7 +97,7 @@ export default function Home() {
           digital experiences, and solutions built to scale. Stay tuned.
         </p>
 
-        <div className="gsap-countdown glass-card mt-6 rounded-2xl px-4 py-4 sm:mt-10 sm:px-10 sm:py-8">
+        <div className="gsap-countdown glass-card mt-6 w-full max-w-full rounded-2xl px-3 py-4 xs:px-4 sm:mt-10 sm:px-10 sm:py-8">
           <CountdownTimer />
         </div>
 

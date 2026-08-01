@@ -11,12 +11,12 @@ export default function FlipUnit({
   const [tens, ones] = padded.split("");
 
   return (
-    <div className="flex flex-col items-center gap-2 sm:gap-3">
-      <div className="flex gap-1 sm:gap-1.5">
+    <div className="flex flex-col items-center gap-1 xs:gap-2 sm:gap-3">
+      <div className="flex gap-0.5 xs:gap-1 sm:gap-1.5">
         <FlipDigit digit={tens} />
         <FlipDigit digit={ones} />
       </div>
-      <span className="text-[10px] sm:text-xs tracking-[0.25em] uppercase text-white/50 font-medium">
+      <span className="text-[8px] xs:text-[10px] sm:text-xs tracking-[0.15em] xs:tracking-[0.25em] uppercase text-white/50 font-medium">
         {label}
       </span>
     </div>

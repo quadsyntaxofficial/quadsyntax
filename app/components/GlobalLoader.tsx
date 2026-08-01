@@ -1,101 +1,107 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
+import logo from "@/public/logo-transparent.png";
 
+const FRAMES = [
+  "/logo-svg/Frame-1.svg",
+  "/logo-svg/Frame-2.svg",
+  "/logo-svg/Frame-3.svg",
+  "/logo-svg/Frame-4.svg",
+  "/logo-svg/Frame-5.svg",
+];
+
+const FRAME_DURATION = 260;
+const HOLD_DURATION = 850;
 const pieceEase = [0.16, 1, 0.3, 1] as const;
 
 export default function GlobalLoader() {
+  const [step, setStep] = useState(0);
   const [visible, setVisible] = useState(true);
+  const isFinal = step >= FRAMES.length;
 
   useEffect(() => {
-    const hide = setTimeout(() => setVisible(false), 2300);
-    return () => clearTimeout(hide);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const frameTimers = FRAMES.map((_, i) =>
+      setTimeout(() => setStep(i + 1), FRAME_DURATION * (i + 1))
+    );
+    const hideTimer = setTimeout(
+      () => setVisible(false),
+      FRAME_DURATION * FRAMES.length + HOLD_DURATION
+    );
+
+    return () => {
+      frameTimers.forEach(clearTimeout);
+      clearTimeout(hideTimer);
+      document.body.style.overflow = previousOverflow;
+    };
   }, []);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        document.body.style.overflow = "";
+      }}
+    >
       {visible && (
         <motion.div
           key="global-loader"
-          className="fixed inset-0 z-100 flex items-center justify-center bg-background"
+          className="fixed inset-0 z-100 flex h-dvh w-dvw items-center justify-center overflow-hidden bg-background"
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
         >
-          <svg
-            viewBox="0 0 240 240"
-            className="h-24 w-24 sm:h-36 sm:w-36"
-            fill="none"
-          >
-            <defs>
-              <linearGradient id="loader-top" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#8b5cf6" />
-                <stop offset="100%" stopColor="#6d35dd" />
-              </linearGradient>
-              <linearGradient id="loader-right" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#4c6ef5" />
-                <stop offset="100%" stopColor="#2c48df" />
-              </linearGradient>
-              <linearGradient id="loader-bottom" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#6d35dd" />
-                <stop offset="100%" stopColor="#2c48df" />
-              </linearGradient>
-              <linearGradient id="loader-tail" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#6d35dd" />
-                <stop offset="100%" stopColor="#2c48df" />
-              </linearGradient>
-            </defs>
+          {/* living gradient glow */}
+          <motion.div
+            className="absolute h-56 w-56 rounded-full bg-brand-gradient blur-[70px] sm:h-72 sm:w-72"
+            animate={{ opacity: [0.25, 0.5, 0.25], scale: [0.9, 1.1, 0.9] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute h-56 w-56 rounded-full sm:h-72 sm:w-72"
+            style={{
+              background: "conic-gradient(from 0deg, #2c48df, #6d35dd, #2c48df)",
+              filter: "blur(45px)",
+              opacity: 0.35,
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          />
 
-            {/* top-right edge — flies in from the top-right corner */}
-            <motion.path
-              d="M120,48 L192,120 L166,120 L120,74 Z"
-              fill="url(#loader-top)"
-              initial={{ x: "75vw", y: "-75vh", opacity: 0, rotate: -25 }}
-              animate={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-              transition={{ duration: 0.9, ease: pieceEase }}
-            />
-
-            {/* right-bottom edge — flies in from the bottom-right corner */}
-            <motion.path
-              d="M192,120 L120,192 L120,166 L166,120 Z"
-              fill="url(#loader-right)"
-              initial={{ x: "75vw", y: "75vh", opacity: 0, rotate: 25 }}
-              animate={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-              transition={{ duration: 0.9, ease: pieceEase }}
-            />
-
-            {/* bottom-left edge — flies in from the bottom-left corner */}
-            <motion.path
-              d="M120,192 L64,124 L88,124 L120,166 Z"
-              fill="url(#loader-bottom)"
-              initial={{ x: "-75vw", y: "75vh", opacity: 0, rotate: -25 }}
-              animate={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-              transition={{ duration: 0.9, ease: pieceEase }}
-            />
-
-            {/* top-left edge — flies in from the top-left corner */}
-            <motion.path
-              d="M64,124 L120,48 L120,74 L88,124 Z"
-              fill="#e9e9f2"
-              initial={{ x: "-75vw", y: "-75vh", opacity: 0, rotate: 25 }}
-              animate={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-              transition={{ duration: 0.9, ease: pieceEase }}
-            />
-
-            {/* diagonal tail "\" — enters last, from the bottom-right corner */}
-            <motion.line
-              x1="148"
-              y1="150"
-              x2="206"
-              y2="208"
-              stroke="url(#loader-tail)"
-              strokeWidth="16"
-              strokeLinecap="round"
-              initial={{ x: "60vw", y: "60vh", opacity: 0 }}
-              animate={{ x: 0, y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, ease: pieceEase, delay: 0.85 }}
-            />
-          </svg>
+          <div className="relative flex h-28 w-28 items-center justify-center xs:h-32 xs:w-32 sm:h-44 sm:w-44">
+            <AnimatePresence mode="wait">
+              {!isFinal ? (
+                <motion.img
+                  key={`frame-${step}`}
+                  src={FRAMES[step]}
+                  alt=""
+                  className="h-full w-full object-contain drop-shadow-[0_0_20px_rgba(109,53,221,0.45)]"
+                  initial={{ opacity: 0, scale: 0.75, rotate: -6 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 1.08 }}
+                  transition={{ duration: 0.28, ease: pieceEase }}
+                />
+              ) : (
+                <motion.div
+                  key="final-logo"
+                  className="h-full w-full"
+                  initial={{ opacity: 0, scale: 0.82 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, ease: pieceEase }}
+                >
+                  <Image
+                    src={logo}
+                    alt="QuadSyntax logo"
+                    className="h-full w-full object-contain drop-shadow-[0_0_25px_rgba(109,53,221,0.55)]"
+                    priority
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

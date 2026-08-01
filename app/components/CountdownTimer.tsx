@@ -67,14 +67,14 @@ export default function CountdownTimer() {
 
   if (target === null) {
     return (
-      <div className="flex gap-3 sm:gap-6">
+      <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-2 xs:gap-3 sm:gap-6">
         {["DAYS", "HRS", "MINS", "SECS"].map((label) => (
-          <div key={label} className="flex flex-col items-center gap-2 sm:gap-3">
-            <div className="flex gap-1 sm:gap-1.5">
-              <div className="w-9 h-12 sm:w-14 sm:h-20 rounded-lg bg-[#12131f] border border-white/5" />
-              <div className="w-9 h-12 sm:w-14 sm:h-20 rounded-lg bg-[#12131f] border border-white/5" />
+          <div key={label} className="flex flex-col items-center gap-1 xs:gap-2 sm:gap-3">
+            <div className="flex gap-0.5 xs:gap-1 sm:gap-1.5">
+              <div className="w-7 h-10 xs:w-9 xs:h-12 sm:w-14 sm:h-20 rounded-lg bg-[#12131f] border border-white/5 shrink-0" />
+              <div className="w-7 h-10 xs:w-9 xs:h-12 sm:w-14 sm:h-20 rounded-lg bg-[#12131f] border border-white/5 shrink-0" />
             </div>
-            <span className="text-[10px] sm:text-xs tracking-[0.25em] uppercase text-white/50 font-medium">
+            <span className="text-[8px] xs:text-[10px] sm:text-xs tracking-[0.15em] xs:tracking-[0.25em] uppercase text-white/50 font-medium">
               {label}
             </span>
           </div>
@@ -84,7 +84,7 @@ export default function CountdownTimer() {
   }
 
   return (
-    <div className="flex gap-3 sm:gap-6">
+    <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-2 xs:gap-3 sm:gap-6">
       <FlipUnit value={timeLeft.days} label="Days" />
       <FlipUnit value={timeLeft.hours} label="Hrs" />
       <FlipUnit value={timeLeft.minutes} label="Mins" />
