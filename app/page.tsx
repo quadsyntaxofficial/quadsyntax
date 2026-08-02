@@ -79,7 +79,7 @@ export default function Home() {
       <FloatingIcons />
 
       <div className="relative z-10 flex h-full w-full max-w-3xl flex-col items-center justify-center text-center">
-        <div className="gsap-logo mb-4 h-40 w-40 sm:h-56 sm:w-56 md:h-24 md:w-44">
+        <div className="gsap-logo mb-4 h-20 w-40 sm:h-56 sm:w-56 md:h-24 md:w-44">
           <Image
             src={logo}
             alt="QuadSyntax logo"
