@@ -264,6 +264,7 @@ const Creators = () => {
           src="/creators.png"
           alt=""
           fill
+          priority
           sizes="100vw"
           className="pointer-events-none h-full w-full object-contain object-top"
         />

@@ -69,6 +69,7 @@ const Contact = () => {
         src="/contact.png"
         alt=""
         fill
+        priority
         sizes="100vw"
         className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top"
       />
@@ -145,6 +146,7 @@ const Contact = () => {
             src="/footer-img.png"
             alt=""
             fill
+            priority
             sizes="(max-width: 768px) 80vw, (max-width: 1280px) 40vw, 560px"
             className="object-cover object-center"
           />
