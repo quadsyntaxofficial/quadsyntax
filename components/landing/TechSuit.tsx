@@ -9,20 +9,55 @@ import { useLenis } from "@/providers/SmoothScroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ROW_A = ["waverio", "SquareStone", "martino", "Natroma", "VERTEX", "aromix"];
-const ROW_B = ["Natroma", "VERTEX", "aromix", "waverio", "SquareStone", "martino"];
+type Tool = { name: string; icon: string };
+
+const ROW_A: Tool[] = [
+  { name: "React", icon: "/tools/REACT.svg" },
+  { name: "Node JS", icon: "/tools/NODE JS.svg" },
+  { name: "Python", icon: "/tools/PYTHON.svg" },
+  { name: "JavaScript", icon: "/tools/JAVASCRIPT.svg" },
+  { name: "TypeScript", icon: "/tools/TYPESCRIPT.svg" },
+  { name: "Angular", icon: "/tools/ANGULAR.svg" },
+  { name: "Vue JS", icon: "/tools/VUE JS.svg" },
+  { name: "GitHub", icon: "/tools/GITHUB.svg" },
+  { name: "Git", icon: "/tools/GIT.svg" },
+  { name: "Mongo DB", icon: "/tools/MONGO DB.svg" },
+  { name: "Redis", icon: "/tools/REDIS.svg" },
+  { name: "GraphQL", icon: "/tools/GRAPHQL.svg" },
+  { name: "Tailwind", icon: "/tools/TAILWIND.svg" },
+  { name: "Firebase", icon: "/tools/FIREBASE.svg" },
+  { name: "Flutter", icon: "/tools/FLUTTER.svg" },
+];
+
+const ROW_B: Tool[] = [
+  { name: "PHP", icon: "/tools/PHP.svg" },
+  { name: "Java", icon: "/tools/JAVA.svg" },
+  { name: "Kotlin", icon: "/tools/KOTLIN.svg" },
+  { name: "Swift", icon: "/tools/SWIFT.svg" },
+  { name: "Go", icon: "/tools/GO.svg" },
+  { name: "Ruby", icon: "/tools/RUBY.svg" },
+  { name: "Ruby on Rails", icon: "/tools/RUBY ON RAILS.svg" },
+  { name: "Django", icon: "/tools/DJANGO.svg" },
+  { name: "Nest JS", icon: "/tools/NEST JS.svg" },
+  { name: "jQuery", icon: "/tools/JQUERY.svg" },
+  { name: "Bootstrap", icon: "/tools/BOOTSTRAP.svg" },
+  { name: "Sass", icon: "/tools/SASS.svg" },
+  { name: "WordPress", icon: "/tools/WORDPRESS.svg" },
+  { name: "Shopify", icon: "/tools/SHOPIFY.svg" },
+  { name: "Stripe", icon: "/tools/STRIPE.svg" },
+];
 
 const MarqueeRow = ({
   tags,
   direction = "left",
   rowRef,
 }: {
-  tags: string[];
+  tags: Tool[];
   direction?: "left" | "right";
   rowRef?: React.Ref<HTMLDivElement>;
 }) => {
   const MIN_HALF_WIDTH_PX = 2000;
-  const APPROX_TAG_WIDTH_PX = 140;
+  const APPROX_TAG_WIDTH_PX = 160;
   const repeats = Math.max(2, Math.ceil(MIN_HALF_WIDTH_PX / (tags.length * APPROX_TAG_WIDTH_PX)));
   const half = Array.from({ length: repeats }, () => tags).flat();
   const loop = [...half, ...half];
@@ -34,13 +69,15 @@ const MarqueeRow = ({
         direction === "left" ? "animate-marquee-left" : "animate-marquee-right"
       }`}
     >
-      {loop.map((tag, i) => (
+      {loop.map((tool, i) => (
         <span
-          key={`${tag}-${i}`}
+          key={`${tool.name}-${i}`}
           className="mr-3 inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-1 text-xs font-medium sm:text-sm"
         >
-          <span />
-          {tag}
+          <span className="relative h-4 w-4 shrink-0 sm:h-5 sm:w-5">
+            <Image src={tool.icon} alt="" fill sizes="20px" className="object-contain" />
+          </span>
+          {tool.name}
         </span>
       ))}
     </div>

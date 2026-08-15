@@ -247,7 +247,7 @@ const Header = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           transition={{ duration: 0.4, ease: EASE }}
-          className="hidden items-center gap-2 rounded-full bg-brand-gradient px-5 py-2 font-inter text-sm font-medium cursor-pointer text-white sm:px-8 lg:flex"
+          className="hidden items-center gap-2 rounded-full bg-brand-gradient px-5 py-3 font-inter text-sm font-medium cursor-pointer text-white sm:px-8 lg:flex"
         >
           <span className="hidden sm:inline">Let&apos;s talk</span>
           <span className="sm:hidden">Talk</span>

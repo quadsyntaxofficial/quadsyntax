@@ -4,7 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import QuadScrollExpand from "../ui/QuadScrollExpand";
 import { ThreeDImageSliderDemo } from "../ui/3d-slider";
-import Panorama from "../ui/Panorama";
+import About from "./About";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -33,7 +33,9 @@ const Hero = () => (
     imageSrc="/bg-1.png"
     scrollDistance={1.1}
     holdDistance={0.5}
+    slideDistance={1}
     smoothing={0.12}
+    revealContent={<About />}
     heroBackground={
       <motion.div
         className="absolute inset-0"
@@ -60,7 +62,6 @@ const Hero = () => (
       <div className="flex h-full w-full flex-col overflow-hidden px-4 pt-14 pb-6 sm:px-6 sm:pt-20 sm:pb-8 md:px-10 md:pt-24 md:pb-10">
         <div className="relative z-10 -mx-4 min-h-0 flex-1 overflow-hidden sm:-mx-6 md:-mx-10">
           <ThreeDImageSliderDemo />
-          {/* <Panorama/> */}
         </div>
         <div className="relative z-20 flex min-h-[28px] shrink-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 text-center text-[9px] text-black/60 sm:min-h-[32px] sm:gap-x-6 sm:pt-3 sm:text-[10px] md:gap-x-8 md:text-xs lg:gap-x-10">
           {WORK_CATEGORIES.map((category) => (

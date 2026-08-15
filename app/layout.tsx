@@ -36,9 +36,9 @@ const nasalization = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "QuadSyntax — Coming Soon",
+  title: "QuadSyntax — Welcome to the future of software.",
   description:
-    "QuadSyntax is crafting something exceptional — custom software, digital experiences, and solutions built to scale. Coming soon.",
+    "QuadSyntax is a new generation of software development. We're building a new future for software development.",
 };
 
 export default function RootLayout({
@@ -58,7 +58,7 @@ export default function RootLayout({
         <Script id="disable-scroll-restoration" strategy="beforeInteractive">
           {`if ("scrollRestoration" in window.history) { window.history.scrollRestoration = "manual"; } window.scrollTo(0, 0);`}
         </Script>
-        {/* <GlobalLoader /> */}
+        <GlobalLoader />
         <SmoothScroll duration={2.4} wheelMultiplier={0.6} anchorOffset={80}>
           <Header />
           {children}

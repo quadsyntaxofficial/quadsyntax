@@ -4,6 +4,9 @@ import {
   useLayoutEffect,
   useRef,
   useCallback,
+  useState,
+  isValidElement,
+  cloneElement,
   type ReactNode,
 } from "react";
 import QuadWordmark, {
@@ -47,8 +50,11 @@ export interface QuadScrollExpandProps {
   heroBackground?: ReactNode;
   heroForeground?: ReactNode; // tagline etc — fades/lifts away as the box expands
   expandedContent?: ReactNode; // carousel / categories — fades in once expanded
+  revealContent?: ReactNode; // section pinned underneath — revealed as the expanded box slides up and away
   scrollDistance?: number; // viewport-heights of scroll needed to fully expand
   holdDistance?: number; // extra viewport-heights held at full expansion
+  slideDistance?: number; // viewport-heights of scroll to slide the expanded box off, revealing revealContent
+  revealHoldDistance?: number; // viewport-heights held, revealContent filling the screen, after the slide finishes — drives revealContent's own wordProgress
   smoothing?: number; // 0 = snap to scroll, higher = laggier/smoother
   letterSplit?: number; // px the wordmark halves separate by at full expansion
   startRadius?: number; // corner radius (px) of the box at rest
@@ -61,8 +67,11 @@ const QuadScrollExpand = ({
   heroBackground,
   heroForeground,
   expandedContent,
+  revealContent,
   scrollDistance = 1.1,
   holdDistance = 0.5,
+  slideDistance = 1,
+  revealHoldDistance = 0.8,
   smoothing = 0.12,
   letterSplit = 400,
   startRadius = 1,
@@ -78,10 +87,18 @@ const QuadScrollExpand = ({
   const bgRef = useRef<HTMLDivElement>(null);
   const foregroundRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const frontRef = useRef<HTMLDivElement>(null);
+  const revealRef = useRef<HTMLDivElement>(null);
 
   const rectRef = useRef<DRect>({ left: 0, top: 0, width: 0, height: 0, originLeft: 0, originTop: 0 });
-  const configRef = useRef({ scrollDistance, holdDistance, smoothing, letterSplit, startRadius });
-  configRef.current = { scrollDistance, holdDistance, smoothing, letterSplit, startRadius };
+  const configRef = useRef({ scrollDistance, holdDistance, slideDistance, revealHoldDistance, smoothing, letterSplit, startRadius });
+  configRef.current = { scrollDistance, holdDistance, slideDistance, revealHoldDistance, smoothing, letterSplit, startRadius };
+  const [revealProgress, setRevealProgress] = useState(0);
+  // 0..1 across the hold *after* the slide has fully finished — i.e. only
+  // once revealContent already fills the whole screen — for driving its own
+  // scroll-linked reveal (e.g. word-by-word) without that reveal running
+  // mid-slide, while revealContent is still partially covered.
+  const [wordProgress, setWordProgress] = useState(0);
 
   // Measure the D-box's real rendered position/size, in px relative to the
   // wordmark container (its resting CSS position, via D_BOX_PERCENT, is
@@ -111,10 +128,21 @@ const QuadScrollExpand = ({
     };
   }, []);
 
-  const applyProgress = useCallback((p: number) => {
+  const applyProgress = useCallback((p: number, sp: number = 0, wp: number = 0) => {
     const stage = stageRef.current;
     const frame = frameRef.current;
     if (!stage || !frame) return;
+
+    if (frontRef.current) {
+      frontRef.current.style.transform = `translate3d(0, ${-sp * 100}%, 0)`;
+      frontRef.current.style.pointerEvents = sp > 0.5 ? "none" : "auto";
+    }
+    if (revealRef.current) {
+      revealRef.current.style.opacity = `${smoothstep(0, 0.12, sp)}`;
+      revealRef.current.style.pointerEvents = sp > 0.5 ? "auto" : "none";
+    }
+    setRevealProgress((prev) => (Math.abs(prev - sp) > 0.0009 ? sp : prev));
+    setWordProgress((prev) => (Math.abs(prev - wp) > 0.0009 ? wp : prev));
 
     const c = configRef.current;
     const e = smoothstep(0, 1, p);
@@ -186,12 +214,16 @@ const QuadScrollExpand = ({
     let raf = 0;
     let current = 0;
     let target = 0;
+    let currentSlide = 0;
+    let targetSlide = 0;
+    let currentWord = 0;
+    let targetWord = 0;
     let running = false;
 
     const setTrackHeight = () => {
       const c = configRef.current;
       const vh = window.innerHeight;
-      track.style.height = `${vh * (1 + Math.max(0.2, c.scrollDistance) + Math.max(0, c.holdDistance))}px`;
+      track.style.height = `${vh * (1 + Math.max(0.2, c.scrollDistance) + Math.max(0, c.holdDistance) + Math.max(0, c.slideDistance) + Math.max(0, c.revealHoldDistance))}px`;
     };
 
     const readProgress = () => {
@@ -201,15 +233,45 @@ const QuadScrollExpand = ({
       return clamp(-top / span, 0, 1);
     };
 
+    const readSlideProgress = () => {
+      const c = configRef.current;
+      const vh = window.innerHeight;
+      const expandHold = vh * (Math.max(0.2, c.scrollDistance) + Math.max(0, c.holdDistance));
+      const span = vh * Math.max(0.001, c.slideDistance);
+      const top = track.getBoundingClientRect().top;
+      return clamp((-top - expandHold) / span, 0, 1);
+    };
+
+    // Only starts advancing once the slide above has fully finished (i.e.
+    // revealContent already fills the whole screen), over its own dedicated
+    // scroll span — so anything driven by this (About's word reveal) only
+    // ever runs while the section is fully in view, not mid-slide.
+    const readWordProgress = () => {
+      const c = configRef.current;
+      const vh = window.innerHeight;
+      const expandHoldSlide = vh * (Math.max(0.2, c.scrollDistance) + Math.max(0, c.holdDistance) + Math.max(0, c.slideDistance));
+      const span = vh * Math.max(0.001, c.revealHoldDistance);
+      const top = track.getBoundingClientRect().top;
+      return clamp((-top - expandHoldSlide) / span, 0, 1);
+    };
+
     const tick = () => {
       const c = configRef.current;
       const k = c.smoothing <= 0 ? 1 : 1 - Math.exp(-1 / (60 * c.smoothing));
       current += (target - current) * k;
-      if (Math.abs(target - current) < 0.0006) {
+      currentSlide += (targetSlide - currentSlide) * k;
+      currentWord += (targetWord - currentWord) * k;
+      if (
+        Math.abs(target - current) < 0.0006 &&
+        Math.abs(targetSlide - currentSlide) < 0.0006 &&
+        Math.abs(targetWord - currentWord) < 0.0006
+      ) {
         current = target;
+        currentSlide = targetSlide;
+        currentWord = targetWord;
         running = false;
       }
-      applyProgress(current);
+      applyProgress(current, currentSlide, currentWord);
       raf = running ? requestAnimationFrame(tick) : 0;
     };
 
@@ -221,9 +283,13 @@ const QuadScrollExpand = ({
 
     const onScroll = () => {
       target = readProgress();
+      targetSlide = readSlideProgress();
+      targetWord = readWordProgress();
       if (configRef.current.smoothing <= 0 || reduceMotion) {
         current = target;
-        applyProgress(current);
+        currentSlide = targetSlide;
+        currentWord = targetWord;
+        applyProgress(current, currentSlide, currentWord);
         return;
       }
       kick();
@@ -233,15 +299,23 @@ const QuadScrollExpand = ({
       measureRect();
       setTrackHeight();
       target = readProgress();
+      targetSlide = readSlideProgress();
+      targetWord = readWordProgress();
       current = target;
-      applyProgress(current);
+      currentSlide = targetSlide;
+      currentWord = targetWord;
+      applyProgress(current, currentSlide, currentWord);
     };
 
     measureRect();
     setTrackHeight();
     target = readProgress();
+    targetSlide = readSlideProgress();
+    targetWord = readWordProgress();
     current = target;
-    applyProgress(current);
+    currentSlide = targetSlide;
+    currentWord = targetWord;
+    applyProgress(current, currentSlide, currentWord);
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
@@ -264,8 +338,8 @@ const QuadScrollExpand = ({
           plain stacked hero (wordmark heading + tagline) followed by the
           carousel, so the section behaves like every other normal section. */}
       <div className="lg:hidden">
-        <div className="relative flex h-[70vh] w-full flex-col justify-center gap-6 overflow-hidden bg-[#06070f] px-5 py-10 text-white xs:h-[68vh] sm:h-[65vh] sm:gap-8 sm:px-6 sm:py-14 md:h-[60vh] md:px-10">
-          {heroBackground ? <div className="absolute inset-0">{heroBackground}</div> : null}
+        <div className="relative flex h-[70vh] w-full flex-col justify-center gap-6 overflow-hidden bg-[#06070f] px-5 py-10 text-white xs:h-[68vh] sm:h-[65vh] sm:gap-8 sm:bg-transparent sm:px-6 sm:py-14 md:h-[60vh] md:bg-transparent md:px-10">
+          {heroBackground ? <div className="absolute inset-0 sm:hidden">{heroBackground}</div> : null}
           <div className="relative z-10 flex flex-col gap-6 sm:gap-8">
             <QuadWordmark className="h-auto w-full" />
             {heroForeground}
@@ -279,20 +353,40 @@ const QuadScrollExpand = ({
             {expandedContent}
           </div>
         ) : null}
+        {revealContent}
       </div>
 
       <div ref={trackRef} className="relative hidden w-full lg:block">
         <div
           ref={stageRef}
-          className="sticky top-0 h-dvh w-full overflow-hidden bg-[#06070f] text-white"
+          className="sticky top-0 h-dvh w-full overflow-hidden text-white"
         >
-          {heroBackground ? (
-            <div ref={bgRef} className="absolute inset-0">
-              {heroBackground}
+          {revealContent ? (
+            <div
+              ref={revealRef}
+              className="absolute inset-0 z-0"
+              style={{ pointerEvents: "none", opacity: 0 }}
+            >
+              {isValidElement(revealContent)
+                ? cloneElement(
+                    revealContent as React.ReactElement<{ revealProgress?: number; wordProgress?: number }>,
+                    { revealProgress, wordProgress }
+                  )
+                : revealContent}
             </div>
           ) : null}
 
-          <div className="relative z-10 flex h-full flex-col justify-center gap-6 px-5 py-10 sm:gap-8 sm:px-6 sm:py-14 md:px-10">
+          <div
+            ref={frontRef}
+            className="absolute inset-0 z-20 will-change-transform"
+          >
+            {heroBackground ? (
+              <div ref={bgRef} className="absolute inset-0">
+                {heroBackground}
+              </div>
+            ) : null}
+
+            <div className="relative z-10 flex h-full flex-col justify-center gap-6 px-5 py-10 sm:gap-8 sm:px-6 sm:py-14 md:px-10">
             <div
               ref={wordmarkRef}
               className="relative w-full select-none"
@@ -354,6 +448,7 @@ const QuadScrollExpand = ({
                 {heroForeground}
               </div>
             ) : null}
+          </div>
           </div>
         </div>
       </div>

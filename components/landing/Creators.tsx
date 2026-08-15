@@ -11,18 +11,18 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TEAM = [
   {
-    name: "Wafa Manan",
-    role: "Head of Design",
-    image: "/Wafa.png",
-    bio: "Overseeing the complete design direction — from branding and visual identity to UI/UX, graphics, and digital experiences — bringing strategy, creativity, and consistency to every project.",
-    linkedin: "#",
-    portfolio: "#",
-  },
-  {
     name: "Saad Minhas",
     role: "Lead Developer",
     image: "/Saad.png",
     bio: "Architecting robust, scalable systems and leading the engineering team through every sprint — turning ambitious product ideas into shipped, reliable software.",
+    linkedin: "#",
+    portfolio: "#",
+  },
+  {
+    name: "Wafa Manan",
+    role: "Head of Design",
+    image: "/Wafa.png",
+    bio: "Overseeing the complete design direction — from branding and visual identity to UI/UX, graphics, and digital experiences — bringing strategy, creativity, and consistency to every project.",
     linkedin: "#",
     portfolio: "#",
   },
@@ -71,16 +71,17 @@ const LinkedinIcon = () => (
 const Creators = () => {
   const [order, setOrder] = useState(() => TEAM.map((_, i) => i));
   const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const lenis = useLenis();
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || hovered) return;
     const id = setInterval(() => {
       setOrder((o) => [...o.slice(1), o[0]]);
     }, AUTO_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [paused]);
+  }, [paused, hovered]);
 
   useEffect(() => {
     if (!lenis) return;
@@ -272,7 +273,11 @@ const Creators = () => {
 
       <div className="relative z-10 mx-auto flex w-full max-w-screen-2xl lg:max-w-7xl flex-col gap-16 px-6 sm:px-10 lg:px-16">
         <LayoutGroup>
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+          <div
+            className="flex flex-col gap-6 lg:flex-row lg:items-stretch"
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+          >
             <div
               ref={bigCardWrapRef}
               className="relative h-75 w-full overflow-hidden rounded-3xl xs:h-85 sm:h-105 md:h-120 lg:h-150 lg:w-[40%]"

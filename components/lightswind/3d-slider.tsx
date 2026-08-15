@@ -40,8 +40,8 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
       items,
       speedWheel = 0.04,
       speedDrag = -0.05,
-      spreadX = 580,
-      spreadY = 70,
+      spreadX = 400,
+      spreadY = 40,
       spreadRotation = 65,
       containerStyle = {},
       className = "",
@@ -92,8 +92,8 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
       let isAnimating = false;
       let externalDrive = false; // true while progress is being set externally (skips easing lag)
 
-      const cache: { tx: string; ty: string; rot: string; z: string; op: string }[] = items.map(
-        () => ({ tx: "", ty: "", rot: "", z: "", op: "" })
+      const cache: { tx: string; ty: string; rot: string; z: string }[] = items.map(
+        () => ({ tx: "", ty: "", rot: "", z: "" })
       );
 
       const REFERENCE_WIDTH = 1000; // container width the authored spreadX/spreadY assume full-strength
@@ -126,7 +126,6 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
 
           const dist = Math.abs(i - activeFloat);
           const z = numItems - dist;
-          const op = Math.max(0, Math.min(1, (z / numItems) * 3 - 1.8)).toFixed(2);
           const zStr = Math.round(z * 10).toString();
 
           const c = cache[i];
@@ -140,10 +139,6 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
           if (c.z !== zStr) {
             card.style.zIndex = zStr;
             c.z = zStr;
-          }
-          if (c.op !== op) {
-            card.style.opacity = op;
-            c.op = op;
           }
         }
       }
