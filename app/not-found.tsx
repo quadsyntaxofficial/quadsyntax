@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { motion } from "framer-motion";
-import FlipDigit from "./components/FlipDigit";
-import FloatingIcons from "./components/FloatingIcons";
+import FlipDigit from "../components/coming-soon/FlipDigit";
+import FloatingIcons from "../components/coming-soon/FloatingIcons";
 
 export default function NotFound() {
   const rootRef = useRef<HTMLDivElement>(null);

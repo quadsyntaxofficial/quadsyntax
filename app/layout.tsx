@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
+import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
-import GlobalLoader from "./components/GlobalLoader";
+import Header from "../components/layout/Header";
+import SmoothScroll from "../providers/SmoothScroll";
+import Footer from "../components/layout/Footer";
+import GlobalLoader from "@/components/coming-soon/GlobalLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,6 +16,23 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter-sans",
+  subsets: ["latin"],
+});
+
+const azonix = localFont({
+  src: "../public/fonts/Azonix.otf",
+  variable: "--font-azonix-local",
+  display: "swap",
+});
+
+const nasalization = localFont({
+  src: "../public/fonts/Nasalization.otf",
+  variable: "--font-nasalization-local",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,11 +49,21 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${azonix.variable} ${nasalization.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen overflow-x-hidden">
+        {/* Runs before hydration — stops the browser from restoring a stale
+            scroll position ahead of Lenis/ScrollTrigger's own measurements,
+            which is what causes the layout to visibly jump on reload. */}
+        <Script id="disable-scroll-restoration" strategy="beforeInteractive">
+          {`if ("scrollRestoration" in window.history) { window.history.scrollRestoration = "manual"; } window.scrollTo(0, 0);`}
+        </Script>
         {/* <GlobalLoader /> */}
-        {children}
+        <SmoothScroll duration={2.4} wheelMultiplier={0.6} anchorOffset={80}>
+          <Header />
+          {children}
+          <Footer />
+        </SmoothScroll>
       </body>
     </html>
   );

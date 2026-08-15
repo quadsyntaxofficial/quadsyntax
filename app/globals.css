@@ -1,13 +1,56 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+@plugin 'lightswind/plugin';
 :root {
-  --background: #06070f;
-  --foreground: #f5f6fb;
   --brand-blue: #2c48df;
   --brand-purple: #6d35dd;
-  --brand-gradient: linear-gradient(135deg, #2c48df 0%, #6d35dd 100%);
+  --brand-gradient: linear-gradient(90deg, #902FF7 0%, #0A41F3 100%);
+
+  /* global body wash, matches Figma: radial 0A41F3 -> 551C91 @ 17%, over black */
+  --body-gradient: radial-gradient(
+      177.04% 48.52% at 50% 47%,
+      rgba(10, 65, 243, 0.17) 0%,
+      rgba(85, 28, 145, 0.17) 100%
+    ),
+    #000;
+
   --surface: #11132199;
   --surface-border: #ffffff1a;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 @theme inline {
@@ -16,8 +59,48 @@
   --color-foreground: var(--foreground);
   --color-brand-blue: var(--brand-blue);
   --color-brand-purple: var(--brand-purple);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter-sans);
   --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-inter-sans);
+  --font-azonix: var(--font-azonix-local), sans-serif;
+  --font-nasalization: var(--font-nasalization-local), sans-serif;
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 * {
@@ -27,12 +110,11 @@
 html,
 body {
   height: 100%;
-  overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--body-gradient);
+  background-attachment: fixed;
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
@@ -91,4 +173,221 @@ body {
     --background: #06070f;
     --foreground: #f5f6fb;
   }
+}
+
+/* Minimal scrollbar: a thin, background-less thumb that only fades in
+   while the page is actively scrolling, then fades back out. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+html.is-scrolling {
+  scrollbar-color: #ffffff40 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.4s ease;
+}
+
+html.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: #ffffff40;
+}
+
+/* Organic drift + glow pulse for the aurora blobs behind the service cards. */
+@keyframes aura-drift-a {
+  0%, 100% { transform: translate(0%, 0%) scale(1); opacity: 0.75; }
+  33% { transform: translate(14%, -16%) scale(1.25); opacity: 1; }
+  66% { transform: translate(-8%, 10%) scale(0.9); opacity: 0.85; }
+}
+
+@keyframes aura-drift-b {
+  0%, 100% { transform: translate(0%, 0%) scale(1) rotate(0deg); opacity: 0.75; }
+  33% { transform: translate(-16%, 12%) scale(0.8) rotate(10deg); opacity: 1; }
+  66% { transform: translate(10%, -10%) scale(1.15) rotate(-8deg); opacity: 0.85; }
+}
+
+@keyframes aura-drift-c {
+  0%, 100% { transform: translate(0%, 0%) scale(1) rotate(0deg); opacity: 0.75; }
+  33% { transform: translate(12%, 14%) scale(1.15) rotate(-12deg); opacity: 1; }
+  66% { transform: translate(-10%, -8%) scale(0.88) rotate(8deg); opacity: 0.85; }
+}
+
+/* Infinite horizontal loop for the TechSuit marquee ribbons. */
+@keyframes marquee-left {
+  from { transform: translateX(0%); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0%); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 28s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 32s linear infinite;
+}
+
+/* The QuadScrollExpand D-box's entrance: it takes its turn in the
+   QUADSYNTAX letter-by-letter reveal (slot 4 of 10), rising up from below
+   like every other letter. Runs on an inner wrapper (not the frame itself,
+   which JS drives via transform/width/height for the scroll expansion) and
+   plays on the server-rendered animation-delay so there's nothing for JS to
+   snap into place — no blink on refresh. */
+@keyframes quad-d-reveal {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quad-d-reveal {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ── Lenis / GSAP integration ────────────────────────────────────── */
+
+/* Lenis takes over native scroll snapping/behavior; smooth-scroll on
+   the html element fights it (double-easing, stutter on anchor jumps). */
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
+/* Freezes the page while Lenis is mid-programmatic scroll (e.g. a modal
+   opening triggers scrollTo) so nothing else can scroll underneath it. */
+html.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Elements that need native scroll even inside a Lenis page — dropdowns,
+   modals, mobile nav drawers. Add data-lenis-prevent to the scrollable
+   element itself. */
+[data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Respect reduced-motion for anything scroll-scrubbed via GSAP, not just
+   the CSS keyframe animations already guarded below. */
+@media (prefers-reduced-motion: reduce) {
+  html.lenis {
+    scroll-behavior: smooth !important;
+  }
+}
+
+/* ── Marquee: pause on hover/focus, respect reduced motion ──────────── */
+/* Your keyframes exist but nothing pauses them or accounts for a user
+   who can't/doesn't want constant motion — both are near-required for
+   a strip of moving pills sitting over interactive content. */
+.animate-marquee-left,
+.animate-marquee-right {
+  animation-play-state: running;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover,
+.animate-marquee-left:focus-within,
+.animate-marquee-right:focus-within {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation: none !important;
+    transform: translateX(0) !important;
+  }
+}
+
+/* ── Scroll-reveal base state ────────────────────────────────────── */
+/* GSAP sets these inline via gsap.set(), but declaring the resting
+   state in CSS too means content isn't briefly visible/unstyled if a
+   route transition mounts the section before the effect runs. */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(80px);
+  filter: blur(14px);
+  will-change: transform, opacity, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ── Aurora blobs: pause when off-screen ─────────────────────────── */
+/* aura-drift-* keyframes run infinitely even when scrolled far out of
+   view — fine for one blob, wasteful with several stacked sections.
+   Toggle this class via an IntersectionObserver (or ScrollTrigger's
+   own onEnter/onLeave) instead of running it unconditionally. */
+.aura-blob {
+  animation-play-state: paused;
+}
+
+.aura-blob.in-view {
+  animation-play-state: running;
 }

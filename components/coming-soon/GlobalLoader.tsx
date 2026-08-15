@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import logo from "@/public/logo-transparent.png";
+import logo from "@/public/quadsyntax-logo.png";
 
 const FRAMES = [
   "/logo-svg/Frame-1.svg",
