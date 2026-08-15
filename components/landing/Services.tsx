@@ -60,7 +60,9 @@ const Services = () => {
 
     ScrollTrigger.normalizeScroll(true);
 
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+
+    mm.add("(min-width: 1024px)", () => {
       const trigger = ScrollTrigger.create({
         trigger: section,
         start: "top top",
@@ -76,9 +78,9 @@ const Services = () => {
       });
 
       return () => trigger.kill();
-    }, section);
+    });
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (

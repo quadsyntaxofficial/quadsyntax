@@ -359,7 +359,7 @@ const Creators = () => {
         </LayoutGroup>
 
         {/* stats */}
-        <div ref={statsWrapRef} className="grid grid-cols-2 gap-x-6 gap-y-10 pt-10 sm:grid-cols-4">
+        <div ref={statsWrapRef} className="flex flex-wrap justify-between gap-x-6 gap-y-10 pt-10">
           {STATS.map((stat) => {
             const { number, suffix } = parseStat(stat.value);
             return (

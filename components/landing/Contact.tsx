@@ -141,7 +141,7 @@ const Contact = () => {
         </div>
 
         {/* right column: character illustration with the "press here" button */}
-        <div className="reveal relative h-56 w-full shrink-0 xs:h-64 sm:h-90 md:h-105 md:w-105 lg:h-120 lg:w-120 xl:h-140 xl:w-140">
+        <div className="reveal relative h-56 w-full shrink-0 xs:h-96 sm:h-90 md:h-105 md:w-105 lg:h-120 lg:w-120 xl:h-140 xl:w-140">
           <Image
             src="/footer-img.png"
             alt=""

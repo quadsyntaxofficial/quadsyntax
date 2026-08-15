@@ -30,14 +30,14 @@ const MarqueeRow = ({
   return (
     <div
       ref={rowRef}
-      className={`flex w-max items-center whitespace-nowrap py-5 backface-hidden transform-[translateZ(0)] will-change-transform ${
+      className={`flex w-max items-center whitespace-nowrap py-1 lg:py-5 backface-hidden transform-[translateZ(0)] will-change-transform ${
         direction === "left" ? "animate-marquee-left" : "animate-marquee-right"
       }`}
     >
       {loop.map((tag, i) => (
         <span
           key={`${tag}-${i}`}
-          className="mr-3 inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium sm:text-sm"
+          className="mr-3 inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-1 text-xs font-medium sm:text-sm"
         >
           <span />
           {tag}
@@ -297,7 +297,7 @@ const TechSuit = () => {
 
         <h1
           ref={headingRef}
-          className="-mt-16 max-w-2xl px-6 text-center text-2xl font-bold uppercase text-white md:text-3xl"
+          className="lg:-mt-16 max-w-2xl px-6 text-center text-2xl font-bold uppercase text-white md:text-3xl"
         >
           What tool you are looking for?
         </h1>
