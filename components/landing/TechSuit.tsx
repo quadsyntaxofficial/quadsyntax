@@ -235,7 +235,7 @@ const TechSuit = () => {
     <section
       ref={sectionRef}
       id="techsuit"
-      className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden py-24 my-16"
+      className="relative flex min-h-[70vh] w-full flex-col items-center justify-center overflow-hidden py-14 my-8 xs:min-h-[75vh] sm:min-h-[85vh] sm:py-20 sm:my-12 md:py-24 md:my-16 lg:min-h-screen"
     >
       <Image
         src="/TechSuit.png"
@@ -249,7 +249,7 @@ const TechSuit = () => {
       <div
         ref={leftMonoRef}
         aria-hidden
-        className="pointer-events-none absolute top-4/7 -left-24 z-0 w-[40vw] rotate-y-180 -translate-y-1/2 sm:-left-44 md:w-[26vw] will-change-transform"
+        className="pointer-events-none absolute top-4/7 -left-24 z-0 w-[40vw] max-w-[420px] rotate-y-180 -translate-y-1/2 sm:-left-44 md:w-[26vw] will-change-transform"
         style={{ aspectRatio: "1 / 1" }}
       >
         <Image src="/logo-monogram.svg" alt="" fill sizes="40vw" className="object-contain" />
@@ -265,7 +265,10 @@ const TechSuit = () => {
       </div>
 
       <div className="relative z-10 flex w-full flex-col items-center">
-        <div ref={charactersWrapRef} className="relative h-100 w-full sm:h-120 md:h-152 lg:h-152 will-change-transform">
+        <div
+          ref={charactersWrapRef}
+          className="relative aspect-1163/791 w-full max-h-[55vh] will-change-transform lg:aspect-auto lg:h-152 lg:max-h-none"
+        >
           <Image
             src="/characters-techsuit.png"
             alt=""
@@ -294,7 +297,7 @@ const TechSuit = () => {
 
         <h1
           ref={headingRef}
-          className="-mt-16 max-w-2xl px-6 text-center text-2xl font-bold uppercase text-white sm:-mt-24 sm:text-2xl md:-mt-16 md:text-3xl"
+          className="-mt-16 max-w-2xl px-6 text-center text-2xl font-bold uppercase text-white md:text-3xl"
         >
           What tool you are looking for?
         </h1>

@@ -57,8 +57,8 @@ const Hero = () => (
       </p>
     }
     expandedContent={
-      <div className="flex h-full w-full flex-col px-4 pt-14 pb-6 sm:px-6 sm:pt-20 sm:pb-8 md:px-10 md:pt-24 md:pb-10">
-        <div className="relative z-10 -mx-4 min-h-0 flex-1 sm:-mx-6 md:-mx-10">
+      <div className="flex h-full w-full flex-col overflow-hidden px-4 pt-14 pb-6 sm:px-6 sm:pt-20 sm:pb-8 md:px-10 md:pt-24 md:pb-10">
+        <div className="relative z-10 -mx-4 min-h-0 flex-1 overflow-hidden sm:-mx-6 md:-mx-10">
           <ThreeDImageSliderDemo />
           {/* <Panorama/> */}
         </div>

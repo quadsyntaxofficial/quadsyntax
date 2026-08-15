@@ -53,6 +53,13 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     const onItemClickRef = useRef(onItemClick);
+    // spreadX/spreadY are authored as desktop px values; on a narrow
+    // viewport that same spread pushes most cards past the (clipped)
+    // container edge, leaving only the center card visible. Scale both
+    // down proportionally to the container's own width instead of
+    // hardcoding breakpoint tables — this keeps the fan visible and
+    // proportioned at any width.
+    const spreadScaleRef = useRef(1);
 
     useEffect(() => {
       onItemClickRef.current = onItemClick;
@@ -89,6 +96,14 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
         () => ({ tx: "", ty: "", rot: "", z: "", op: "" })
       );
 
+      const REFERENCE_WIDTH = 1000; // container width the authored spreadX/spreadY assume full-strength
+      const MIN_SPREAD_SCALE = 0.32; // never shrink the fan so much it collapses into one stack
+      const computeSpreadScale = () => {
+        const width = container.getBoundingClientRect().width;
+        spreadScaleRef.current = Math.max(MIN_SPREAD_SCALE, Math.min(1, width / REFERENCE_WIDTH));
+      };
+      computeSpreadScale();
+
       function update() {
         // Snap instantly when driven externally (scroll scrub already
         // provides its own smoothing) — otherwise ease as before.
@@ -103,9 +118,10 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
           const card = cardRefs.current[i];
           if (!card) continue;
 
+          const scale = spreadScaleRef.current;
           const ratio = (i - activeFloat) / denom;
-          const tx = (ratio * spreadX).toFixed(2);
-          const ty = (ratio * spreadY).toFixed(2);
+          const tx = (ratio * spreadX * scale).toFixed(2);
+          const ty = (ratio * spreadY * scale).toFixed(2);
           const rot = (ratio * spreadRotation).toFixed(2);
 
           const dist = Math.abs(i - activeFloat);
@@ -218,6 +234,12 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
       window.addEventListener("touchmove", onMove, { passive: true });
       window.addEventListener("touchend", onUp, { passive: true });
 
+      const ro = new ResizeObserver(() => {
+        computeSpreadScale();
+        update();
+      });
+      ro.observe(container);
+
       // Expose the external control surface used by setProgress().
       controlRef.current = {
         setProgress: (p: number) => {
@@ -239,6 +261,7 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
         window.removeEventListener("mouseup", onUp);
         window.removeEventListener("touchmove", onMove);
         window.removeEventListener("touchend", onUp);
+        ro.disconnect();
         if (rafId) cancelAnimationFrame(rafId);
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -247,7 +270,7 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
     return (
       <div
         ref={containerRef}
-        className={`relative w-full h-[520px] sm:h-screen overflow-hidden rounded-2xl ${className}`}
+        className={`relative w-full h-[58vh] xs:h-[62vh] sm:h-[68vh] md:h-[72vh] lg:h-screen overflow-hidden rounded-2xl ${className}`}
         style={{ ...containerStyle, touchAction: "pan-y" }}
       >
         {items.map((item, i) => (

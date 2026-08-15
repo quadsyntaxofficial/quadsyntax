@@ -257,7 +257,7 @@ const Creators = () => {
     <section
       ref={sectionRef}
       id="team"
-      className="relative w-full overflow-hidden pt-60 pb-24"
+      className="relative w-full overflow-hidden pt-28 pb-16 sm:pt-40 sm:pb-20 md:pt-52 lg:pt-60 lg:pb-24"
     >
       <div ref={watermarkRef} className="absolute inset-0 h-full w-full">
         <Image
@@ -274,7 +274,7 @@ const Creators = () => {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
             <div
               ref={bigCardWrapRef}
-              className="relative h-[360px] w-full overflow-hidden rounded-3xl sm:h-[420px] lg:h-[600px] lg:w-[40%]"
+              className="relative h-75 w-full overflow-hidden rounded-3xl xs:h-85 sm:h-105 md:h-120 lg:h-150 lg:w-[40%]"
             >
               <motion.div
                 key={active.name}
@@ -304,11 +304,11 @@ const Creators = () => {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="text-left lg:text-right"
                 >
-                  <h3 className="text-2xl font-bold text-white sm:text-6xl">{active.name}</h3>
-                  <p className="mt-1 text-2xl font-medium uppercase tracking-wide text-white/50">
+                  <h3 className="text-xl font-bold text-white xs:text-2xl sm:text-4xl md:text-5xl lg:text-6xl">{active.name}</h3>
+                  <p className="mt-1 text-base font-medium uppercase tracking-wide text-white/50 sm:text-xl md:text-2xl">
                     {active.role}
                   </p>
-                  <p className="mt-4 max-w-xl text-lg text-white/60 lg:ml-auto">{active.bio}</p>
+                  <p className="mt-4 max-w-xl text-sm text-white/60 sm:text-base md:text-lg lg:ml-auto">{active.bio}</p>
 
                   <div className="mt-5 flex items-center gap-3 lg:justify-end">
                     <a
@@ -339,7 +339,7 @@ const Creators = () => {
                       transition={FLOW}
                       onClick={() => select(i)}
                       aria-label={`Show ${person.name}`}
-                      className="group relative h-32 w-full flex-1 overflow-hidden rounded-2xl sm:h-72"
+                      className="group relative h-24 w-full flex-1 overflow-hidden rounded-2xl xs:h-28 sm:h-56 md:h-72"
                     >
                       <Image
                         src={person.image}
@@ -358,19 +358,19 @@ const Creators = () => {
         </LayoutGroup>
 
         {/* stats */}
-        <div ref={statsWrapRef} className="flex flex-wrap justify-between gap-x-6 gap-y-10 pt-10 sm:grid-cols-4">
+        <div ref={statsWrapRef} className="grid grid-cols-2 gap-x-6 gap-y-10 pt-10 sm:grid-cols-4">
           {STATS.map((stat) => {
             const { number, suffix } = parseStat(stat.value);
             return (
               <div key={stat.label}>
                 <p
                   data-stat-value
-                  className="text-3xl font-extrabold text-white sm:text-7xl will-change-[filter]"
+                  className="text-2xl font-extrabold text-white xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl will-change-[filter]"
                 >
                   {countdownStart(number)}
                   {suffix}
                 </p>
-                <p className="mt-1 text-xs text-white/50">{stat.label}</p>
+                <p className="mt-1 text-xs text-white/50 sm:text-sm">{stat.label}</p>
               </div>
             );
           })}

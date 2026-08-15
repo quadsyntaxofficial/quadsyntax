@@ -62,7 +62,7 @@ const Contact = () => {
     <section
       ref={sectionRef}
       id="contact"
-      className="relative flex w-full items-center overflow-hidden py-24"
+      className="relative flex w-full items-center overflow-hidden py-16 sm:py-20 lg:py-24"
     >
       {/* faint background word, matches the "CONTACT" watermark in the reference */}
       <Image
@@ -75,7 +75,7 @@ const Contact = () => {
 
       <div
         ref={contentRef}
-        className="relative z-10 flex max-w-screen-2xl lg:max-w-7xl mx-auto flex-col items-center gap-10 lg:flex-row lg:justify-center lg:gap-6 "
+        className="relative z-10 mx-auto flex w-full max-w-screen-2xl flex-col items-center gap-10 px-6 sm:px-10 lg:max-w-7xl lg:flex-row lg:justify-center lg:gap-6 lg:px-16"
       >
         {/* left column: copy + contact details */}
         <div className="flex flex-col items-start text-left md:shrink-0">
@@ -83,16 +83,16 @@ const Contact = () => {
             Need a digital boost?
           </h2>
 
-          <p className="reveal mt-4 max-w-md text-lg text-white/60 sm:text-base">
+          <p className="reveal mt-4 max-w-md text-sm text-white/60 sm:text-base">
             Tell us what you&apos;re building. We&apos;ll bring the ideas, design &amp; technology to make it happen.
           </p>
 
-          <p className="reveal mt-3 text-md font-bold italic uppercase tracking-wide text-white">
+          <p className="reveal mt-3 text-sm font-bold italic uppercase tracking-wide text-white sm:text-base">
             Press. Connect. Create.
           </p>
 
           <div className="reveal mt-10 w-full">
-            <p className="text-md font-semibold uppercase tracking-widest text-white">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white sm:text-sm">
               Contact Info
             </p>
 
@@ -120,7 +120,7 @@ const Contact = () => {
           </div>
 
           <div className="reveal mt-8 w-full">
-            <p className="text-md font-semibold uppercase tracking-widest text-white">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white sm:text-sm">
               Social Info
             </p>
 
@@ -140,7 +140,7 @@ const Contact = () => {
         </div>
 
         {/* right column: character illustration with the "press here" button */}
-        <div className="reveal relative h-70 w-full shrink-0 sm:h-90 md:h-105 md:w-105 lg:h-120 lg:w-120 xl:h-140 xl:w-140">
+        <div className="reveal relative h-56 w-full shrink-0 xs:h-64 sm:h-90 md:h-105 md:w-105 lg:h-120 lg:w-120 xl:h-140 xl:w-140">
           <Image
             src="/footer-img.png"
             alt=""

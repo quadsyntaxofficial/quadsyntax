@@ -120,6 +120,15 @@ const Header = () => {
 
   useEffect(() => {
     let rafId: number;
+    // Right at a light/dark section boundary, the probe point below the
+    // header can read either side from one frame to the next (scroll
+    // settling, sub-pixel jitter), which flips `light` back and forth and
+    // makes the icon/logo strobe between colors. Require a reading to hold
+    // for a few consecutive frames before it actually commits, the same
+    // hysteresis trick used for the scroll-direction detection below.
+    const THEME_COMMIT_FRAMES = 4;
+    let pendingTheme: boolean | null = null;
+    let pendingStreak = 0;
 
     const sample = () => {
       const header = headerRef.current;
@@ -135,7 +144,18 @@ const Header = () => {
       const theme = behind
         ?.closest<HTMLElement>("[data-header-theme]")
         ?.dataset.headerTheme;
-      setLight(theme === "light");
+      const reading = theme === "light";
+
+      if (reading === pendingTheme) {
+        pendingStreak += 1;
+      } else {
+        pendingTheme = reading;
+        pendingStreak = 1;
+      }
+      if (pendingStreak >= THEME_COMMIT_FRAMES) {
+        setLight((prev) => (prev === reading ? prev : reading));
+      }
+
       rafId = requestAnimationFrame(sample);
     };
 

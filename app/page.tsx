@@ -1,5 +1,6 @@
 import ComingSoon from "../components/coming-soon/ComingSoon";
 import About from "../components/landing/About";
+import Services from "../components/landing/Services";
 import HeroReveal from "../components/landing/Hero";
 import TechSuit from "../components/landing/TechSuit";
 import Creators from "../components/landing/Creators";
@@ -11,6 +12,7 @@ export default function Home() {
       {/* <ComingSoon /> */}
       <HeroReveal />
       <About />
+      <Services />
       <TechSuit/>
       <Creators />
       <Contact />

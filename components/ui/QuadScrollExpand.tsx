@@ -274,7 +274,7 @@ const QuadScrollExpand = ({
         {expandedContent ? (
           <div
             data-header-theme="light"
-            className="relative flex h-[60vh] w-full flex-col bg-white text-black xs:h-[58vh] sm:h-[55vh] md:h-[50vh]"
+            className="relative flex h-[60vh] w-full flex-col overflow-hidden bg-white text-black xs:h-[58vh] sm:h-[55vh] md:h-[50vh]"
           >
             {expandedContent}
           </div>

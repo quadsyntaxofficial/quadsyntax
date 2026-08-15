@@ -56,7 +56,7 @@ export default function ImageSlider3D({
 
   return (
     <div
-      className={`grid w-full h-full min-h-[80dvh] overflow-visible place-items-center ${containerClassName}`}
+      className={`grid w-full h-full max-w-full overflow-hidden place-items-center ${containerClassName}`}
       style={{
         perspective: perspective,
       }}
