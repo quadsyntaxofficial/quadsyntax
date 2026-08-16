@@ -58,8 +58,6 @@ const Services = () => {
     const section = servicesSectionRef.current;
     if (!section) return;
 
-    ScrollTrigger.normalizeScroll(true);
-
     const mm = gsap.matchMedia();
 
     mm.add("(min-width: 1024px)", () => {

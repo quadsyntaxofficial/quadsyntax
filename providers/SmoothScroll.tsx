@@ -25,10 +25,10 @@ const defaultEasing = (t: number) => 1 - Math.pow(1 - t, 4);
 
 const SmoothScroll = ({
   children,
-  duration = 2.4,
+  duration = 1,
   easing = defaultEasing,
-  wheelMultiplier = 0.6,
-  touchMultiplier = 0.6,
+  wheelMultiplier = 1,
+  touchMultiplier = 1,
   anchorOffset = 0,
   scrollbarFadeDelay = 600,
 }: { children: React.ReactNode } & SmoothScrollOptions) => {

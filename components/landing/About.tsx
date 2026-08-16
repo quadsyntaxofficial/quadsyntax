@@ -48,7 +48,8 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
     const ctx = gsap.context(() => {
       const words = container.querySelectorAll<HTMLSpanElement>(".word");
 
-      gsap.set(words, { opacity: 0.01 });
+      gsap.set(words, { opacity: 0.3 });
+      gsap.set(container, { opacity: 0 });
 
       // Pin the section once it fills the viewport, then reveal each word
       // at full opacity, in reading order, as the user scrolls through the
@@ -83,7 +84,7 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
     };
   };
 
-  let wordIndex = -1;
+  const wordEntries = COPY.flatMap((line) => line.text.split(" ").map((word) => word));
 
   return (
     <section
@@ -128,22 +129,29 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
         className="relative z-10 max-w-[100rem] px-6 text-center"
       >
         <p className="relative isolate text-md font-inter uppercase leading-[1.08] tracking-wide sm:text-5xl md:text-6xl lg:text-6xl">
-          {COPY.map((line, i) => (
-            <span key={i} className="block">
-              {line.text.split(" ").map((w, j) => {
-                wordIndex += 1;
-                return (
-                  <span
-                    key={j}
-                    className="word relative mr-[0.3em] inline-block text-white"
-                    style={wordStyle(wordIndex)}
-                  >
-                    {w}
-                  </span>
-                );
-              })}
-            </span>
-          ))}
+          {COPY.map((line, i) => {
+            const words = line.text.split(" ");
+            return (
+              <span key={i} className="block">
+                {words.map((w, j) => {
+                  const globalIndex = wordEntries.findIndex((value, index) => {
+                    if (index === 0) return false;
+                    const prevCount = COPY.slice(0, i).reduce((sum, item) => sum + item.text.split(" ").length, 0);
+                    return index === prevCount + j;
+                  });
+                  return (
+                    <span
+                      key={`${i}-${j}`}
+                      className="word relative mr-[0.3em] inline-block text-white"
+                      style={wordStyle(globalIndex >= 0 ? globalIndex : 0)}
+                    >
+                      {w}
+                    </span>
+                  );
+                })}
+              </span>
+            );
+          })}
         </p>
       </div>
     </section>

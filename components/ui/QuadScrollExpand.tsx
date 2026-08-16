@@ -16,6 +16,7 @@ import QuadWordmark, {
   D_LETTER_SLOT,
   LETTER_STAGGER,
 } from "./QuadWordMark";
+import { useMotionValue } from "framer-motion";
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 const smoothstep = (edge0: number, edge1: number, x: number) => {
@@ -89,10 +90,11 @@ const QuadScrollExpand = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
+      const revealMV = useMotionValue(0);
+    const wordMV = useMotionValue(0);
 
   const rectRef = useRef<DRect>({ left: 0, top: 0, width: 0, height: 0, originLeft: 0, originTop: 0 });
   const configRef = useRef({ scrollDistance, holdDistance, slideDistance, revealHoldDistance, smoothing, letterSplit, startRadius });
-  configRef.current = { scrollDistance, holdDistance, slideDistance, revealHoldDistance, smoothing, letterSplit, startRadius };
   const [revealProgress, setRevealProgress] = useState(0);
   // 0..1 across the hold *after* the slide has fully finished — i.e. only
   // once revealContent already fills the whole screen — for driving its own
@@ -141,8 +143,12 @@ const QuadScrollExpand = ({
       revealRef.current.style.opacity = `${smoothstep(0, 0.12, sp)}`;
       revealRef.current.style.pointerEvents = sp > 0.5 ? "auto" : "none";
     }
-    setRevealProgress((prev) => (Math.abs(prev - sp) > 0.0009 ? sp : prev));
-    setWordProgress((prev) => (Math.abs(prev - wp) > 0.0009 ? wp : prev));
+
+    // in applyProgress:
+    revealMV.set(sp);
+    wordMV.set(wp);
+    // setRevealProgress((prev) => (Math.abs(prev - sp) > 0.0009 ? sp : prev));
+    // setWordProgress((prev) => (Math.abs(prev - wp) > 0.0009 ? wp : prev));
 
     const c = configRef.current;
     const e = smoothstep(0, 1, p);
@@ -201,6 +207,8 @@ const QuadScrollExpand = ({
   }, []);
 
   useLayoutEffect(() => {
+    configRef.current = { scrollDistance, holdDistance, slideDistance, revealHoldDistance, smoothing, letterSplit, startRadius };
+
     const track = trackRef.current;
     const stage = stageRef.current;
     const wordmark = wordmarkRef.current;
@@ -369,9 +377,9 @@ const QuadScrollExpand = ({
             >
               {isValidElement(revealContent)
                 ? cloneElement(
-                    revealContent as React.ReactElement<{ revealProgress?: number; wordProgress?: number }>,
-                    { revealProgress, wordProgress }
-                  )
+                  revealContent as React.ReactElement<{ revealProgress?: number; wordProgress?: number }>,
+                  { revealProgress, wordProgress }
+                )
                 : revealContent}
             </div>
           ) : null}
@@ -387,68 +395,68 @@ const QuadScrollExpand = ({
             ) : null}
 
             <div className="relative z-10 flex h-full flex-col justify-center gap-6 px-5 py-10 sm:gap-8 sm:px-6 sm:py-14 md:px-10">
-            <div
-              ref={wordmarkRef}
-              className="relative w-full select-none"
-              style={{ aspectRatio: `${QUAD_VIEWBOX.width} / ${QUAD_VIEWBOX.height}` }}
-            >
-              <QuadWordmark
-                className="h-auto w-full"
-                hideBox
-                revealLetters
-                revealDelay={WORDMARK_REVEAL_DELAY}
-              />
+              <div
+                ref={wordmarkRef}
+                className="relative w-full select-none"
+                style={{ aspectRatio: `${QUAD_VIEWBOX.width} / ${QUAD_VIEWBOX.height}` }}
+              >
+                <QuadWordmark
+                  className="h-auto w-full"
+                  hideBox
+                  revealLetters
+                  revealDelay={WORDMARK_REVEAL_DELAY}
+                />
 
-              {/* THE D-BOX — rendered at rest via pure CSS percentages (D_BOX_PERCENT),
+                {/* THE D-BOX — rendered at rest via pure CSS percentages (D_BOX_PERCENT),
                   so it's correctly positioned on the very first paint with no JS
                   measurement needed (no blink on refresh). The outer div is what JS
                   drives (transform/width/height) for the scroll expansion, so the
                   entrance itself — rising up from below like every other letter, as
                   the literal "D" in the QUADSYNTAX sequence — animates on an inner
                   wrapper instead, leaving the outer transform free. */}
-              <div
-                ref={frameRef}
-                data-header-theme="light"
-                className="absolute z-30 origin-top-left overflow-hidden will-change-[transform,width,height]"
-                style={{
-                  left: `${D_BOX_PERCENT.left}%`,
-                  top: `${D_BOX_PERCENT.top}%`,
-                  width: `${D_BOX_PERCENT.width}%`,
-                  height: `${D_BOX_PERCENT.height}%`,
-                  borderRadius: `${startRadius}px`,
-                }}
-              >
                 <div
-                  className="quad-d-reveal absolute inset-0 bg-white will-change-[transform,opacity]"
+                  ref={frameRef}
+                  data-header-theme="light"
+                  className="absolute z-30 origin-top-left overflow-hidden will-change-[transform,width,height]"
                   style={{
-                    animation: `quad-d-reveal ${D_REVEAL_DURATION}s ${D_REVEAL_EASE} ${D_REVEAL_DELAY}s both`,
+                    left: `${D_BOX_PERCENT.left}%`,
+                    top: `${D_BOX_PERCENT.top}%`,
+                    width: `${D_BOX_PERCENT.width}%`,
+                    height: `${D_BOX_PERCENT.height}%`,
+                    borderRadius: `${startRadius}px`,
                   }}
                 >
-                  <img
-                    ref={imageRef}
-                    src={imageSrc}
-                    alt={imageAlt}
-                    className="absolute inset-0 h-full w-full object-cover opacity-0 will-change-[opacity]"
-                    draggable={false}
-                  />
-                  {expandedContent ? (
-                    <div
-                      ref={contentRef}
-                      className="absolute inset-0 flex flex-col opacity-0 [will-change:opacity,transform]"
-                    >
-                      {expandedContent}
-                    </div>
-                  ) : null}
+                  <div
+                    className="quad-d-reveal absolute inset-0 bg-white will-change-[transform,opacity]"
+                    style={{
+                      animation: `quad-d-reveal ${D_REVEAL_DURATION}s ${D_REVEAL_EASE} ${D_REVEAL_DELAY}s both`,
+                    }}
+                  >
+                    <img
+                      ref={imageRef}
+                      src={imageSrc}
+                      alt={imageAlt}
+                      className="absolute inset-0 h-full w-full object-cover opacity-0 will-change-[opacity]"
+                      draggable={false}
+                    />
+                    {expandedContent ? (
+                      <div
+                        ref={contentRef}
+                        className="absolute inset-0 flex flex-col opacity-0 [will-change:opacity,transform]"
+                      >
+                        {expandedContent}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {heroForeground ? (
-              <div ref={foregroundRef} className="will-change-transform">
-                {heroForeground}
-              </div>
-            ) : null}
-          </div>
+              {heroForeground ? (
+                <div ref={foregroundRef} className="will-change-transform">
+                  {heroForeground}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

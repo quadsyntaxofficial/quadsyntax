@@ -1,6 +1,6 @@
 "use client";
 
-import React, { forwardRef, CSSProperties } from "react";
+import React, { forwardRef } from "react";
 import Aurora from "@/components/Aurora";
 
 export interface SliderItemData {
@@ -8,7 +8,7 @@ export interface SliderItemData {
   num: string;
   description?: string;
   tags?: string[];
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 // Reference frame the % positions below were derived from.

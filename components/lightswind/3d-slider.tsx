@@ -84,7 +84,7 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
 
       const numItems = items.length;
 
-      let progress = 50;
+      let progress = -10;
       let targetProgress = 50;
       let isDown = false;
       let startX = 0;
@@ -259,7 +259,6 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
         ro.disconnect();
         if (rafId) cancelAnimationFrame(rafId);
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [items, speedWheel, speedDrag, spreadX, spreadY, spreadRotation, disableWheel]);
 
     return (
@@ -271,7 +270,7 @@ const ThreeDSlider = forwardRef<ThreeDSliderHandle, ThreeDSliderProps>(
         {items.map((item, i) => (
           <SliderCard
             key={i}
-            ref={(el:any) => {
+            ref={(el: HTMLDivElement | null) => {
               cardRefs.current[i] = el;
             }}
             item={item}

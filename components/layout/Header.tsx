@@ -3,7 +3,6 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useSmoothNav } from "@/hooks/use-smooth-nav";
-import { useLenis } from "@/providers/SmoothScroll";
 
 const navLinks = ["Home", "About", "Services", "Team", "Projects"];
 const linkHref = (link: string) => `#${link.toLowerCase()}`;
@@ -28,36 +27,14 @@ const navItem = {
   },
 };
 
-// Header only reacts to scroll once past this point, so it never
-// hides/flickers while the page is still near the top.
-const HIDE_THRESHOLD_PX = 120;
-// How much net upward or downward travel has to accumulate before the
-// header commits to hiding — this is what keeps a single jittery wheel
-// tick or a trackpad's sub-pixel noise from toggling visibility.
-const DIRECTION_COMMIT_PX = 12;
-
 const Header = () => {
   const headerRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
-  const [navHidden, setNavHidden] = useState(false);
   const [activeLink, setActiveLink] = useState("Home");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [light, setLight] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const handleNav = useSmoothNav();
-  const lenis = useLenis();
-
-  // The hide-on-scroll-down / reveal-on-scroll-up behavior is a desktop-only
-  // affordance — on sm/md the header stays put so the fixed nav (and the
-  // hamburger trigger) is always reachable while scrolling.
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsDesktop(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -65,58 +42,6 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // ── show/hide on scroll direction, via Lenis ────────────────────────
-  // Lenis's scroll event gives a smoothed position rather than the raw
-  // wheel delta, so direction reads as one continuous gesture instead of
-  // flip-flopping frame to frame. We still track our own accumulator
-  // rather than trusting Lenis's per-frame `direction` directly, because
-  // that flips sign on every tiny sub-pixel wobble near a direction
-  // change — accumulating net travel since the last commit smooths that
-  // out into a single decisive "user is now scrolling up" moment.
-  useEffect(() => {
-    if (!lenis) return;
-
-    let lastScroll = lenis.scroll;
-    let accumulated = 0;
-    let committedDirection: "up" | "down" | null = null;
-
-    const handleLenisScroll = ({ scroll }: { scroll: number }) => {
-      const delta = scroll - lastScroll;
-      lastScroll = scroll;
-
-      if (scroll < HIDE_THRESHOLD_PX) {
-        setNavHidden(false);
-        accumulated = 0;
-        committedDirection = null;
-        return;
-      }
-
-      const movingDown = delta > 0;
-      if ((movingDown && committedDirection === "down") || (!movingDown && committedDirection === "up")) {
-        // still travelling the same way we already committed to — reset
-        // the accumulator so a reversal has to earn its own threshold
-        accumulated = 0;
-      } else {
-        accumulated += delta;
-      }
-
-      if (accumulated > DIRECTION_COMMIT_PX) {
-        committedDirection = "down";
-        setNavHidden(true);
-        accumulated = 0;
-      } else if (accumulated < -DIRECTION_COMMIT_PX) {
-        committedDirection = "up";
-        setNavHidden(false);
-        accumulated = 0;
-      }
-    };
-
-    lenis.on("scroll", handleLenisScroll);
-    return () => {
-      lenis.off("scroll", handleLenisScroll);
-    };
-  }, [lenis]);
 
   useEffect(() => {
     let rafId: number;
@@ -177,19 +102,10 @@ const Header = () => {
     };
   }, [menuOpen]);
 
-  // Never hide the header while the mobile menu is open — the trigger to
-  // close it lives inside the header itself. And never hide it below lg —
-  // sm/md keep the header pinned in place regardless of scroll direction.
-  const effectivelyHidden = isDesktop && navHidden && !menuOpen;
-
   return (
     <motion.header
       ref={headerRef}
-      animate={{
-        y: effectivelyHidden ? "-110%" : "0%",
-      }}
-      transition={{ duration: 0.6, ease: EASE }}
-      className={`fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-4 transition-[background-color,border-color,backdrop-filter] duration-500 bg-transparent sm:px-6 sm:py-5 md:px-8 lg:px-10 lg:py-6`}
+      className={` absolute inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-4 transition-[background-color,border-color,backdrop-filter] duration-500 bg-transparent sm:px-6 sm:py-5 md:px-8 lg:px-10 lg:py-6`}
     >
       <motion.div
         animate={{ y: 0, opacity: 1 }}
