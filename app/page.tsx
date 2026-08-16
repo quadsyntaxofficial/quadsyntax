@@ -1,4 +1,3 @@
-import ComingSoon from "../components/coming-soon/ComingSoon";
 import Services from "../components/landing/Services";
 import HeroReveal from "../components/landing/Hero";
 import TechSuit from "../components/landing/TechSuit";

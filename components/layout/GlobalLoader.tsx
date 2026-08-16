@@ -29,7 +29,6 @@ const CRITICAL_ASSETS = [
   "/svg/circle-arrow.svg",
 ];
 
-const SESSION_KEY = "quadsyntax-intro-seen";
 const MIN_VISIBLE_MS = 1500;
 const READY_TIMEOUT_MS = 6000;
 const BLUE = new THREE.Color("#2c48df");
@@ -44,25 +43,12 @@ const preloadImage = (src: string) =>
   });
 
 export default function GlobalLoader() {
-  const [shouldRender, setShouldRender] = useState(false);
   const [visible, setVisible] = useState(true);
   const [displayPct, setDisplayPct] = useState(0);
   const canvasHostRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // Decide once, synchronously on mount, whether this tab has already seen
-  // the intro this session — skips both the DOM and the WebGL setup below.
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem(SESSION_KEY)) return;
-    } catch {
-      // sessionStorage unavailable (privacy mode etc.) — fall through and show it.
-    }
-    setShouldRender(true);
-  }, []);
-
-  useEffect(() => {
-    if (!shouldRender) return;
     const host = canvasHostRef.current;
     if (!host) return;
 
@@ -196,11 +182,6 @@ export default function GlobalLoader() {
       const exitTl = gsap.timeline({
         delay: 0.35,
         onComplete: () => {
-          try {
-            sessionStorage.setItem(SESSION_KEY, "1");
-          } catch {
-            // ignore — worst case the intro just plays again next load
-          }
           setVisible(false);
         },
       });
@@ -229,14 +210,17 @@ export default function GlobalLoader() {
       if (renderer.domElement.parentElement === host) host.removeChild(renderer.domElement);
       document.body.style.overflow = previousOverflow;
     };
-  }, [shouldRender]);
+  }, []);
 
-  if (!shouldRender || !visible) return null;
+  if (!visible) return null;
 
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-100 flex h-dvh w-dvw flex-col items-center justify-center overflow-hidden bg-background"
+      className="fixed inset-0 z-100 flex h-dvh w-dvw flex-col items-center justify-center overflow-hidden bg-[#020816]"
+      style={{
+        background: "radial-gradient(circle at center, rgba(10, 65, 243, 0.18), rgba(2, 8, 22, 0.96) 55%, rgba(0, 0, 0, 1) 100%)",
+      }}
     >
       <div ref={canvasHostRef} className="absolute inset-0" />
 

@@ -4,8 +4,6 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { motion } from "framer-motion";
-import FlipDigit from "../components/coming-soon/FlipDigit";
-import FloatingIcons from "../components/coming-soon/FloatingIcons";
 
 export default function NotFound() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -47,14 +45,8 @@ export default function NotFound() {
         transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <FloatingIcons />
 
       <div className="relative z-10 flex h-full w-full max-w-3xl flex-col items-center justify-center text-center">
-        <div className="gsap-404 mb-4 flex gap-1.5 sm:gap-2">
-          <FlipDigit digit="4" />
-          <FlipDigit digit="0" />
-          <FlipDigit digit="4" />
-        </div>
 
         <h1 className="gsap-heading text-2xl font-extrabold tracking-tight sm:text-5xl">
           <span className="text-gradient">Page Not Found</span>

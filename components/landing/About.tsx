@@ -14,13 +14,21 @@ const smoothstep = (edge0: number, edge1: number, x: number) => {
 };
 
 const COPY = [
-  { text: "WE CREATE IMPACTFUL DIGITAL", emphasis: false },
-  { text: "EXPERIENCES THROUGH THOUGHTFUL", emphasis: false },
-  { text: "DESIGN, INNOVATIVE TECHNOLOGY,", emphasis: false },
-  { text: "AND PURPOSEFUL STRATEGY.", emphasis: false },
+  { text: "WE CREATE IMPACTFUL DIGITAL" },
+  { text: "EXPERIENCES THROUGH THOUGHTFUL" },
+  { text: "DESIGN, INNOVATIVE TECHNOLOGY," },
+  { text: "AND PURPOSEFUL STRATEGY." },
 ];
 
-const ALL_WORDS = COPY.flatMap((line) => line.text.split(" "));
+// Precompute how many words come before each line, so each word's global
+// index (used to drive its individual reveal timing) is a simple lookup
+// instead of a per-render findIndex scan.
+const LINE_WORD_COUNTS = COPY.map((line) => line.text.split(" ").length);
+const LINE_START_INDEX = LINE_WORD_COUNTS.reduce<number[]>((acc, count, i) => {
+  acc.push(i === 0 ? 0 : acc[i - 1] + LINE_WORD_COUNTS[i - 1]);
+  return acc;
+}, []);
+const TOTAL_WORDS = LINE_WORD_COUNTS.reduce((a, b) => a + b, 0);
 
 export interface AboutProps {
   // When provided (0..1), this section is embedded inside QuadScrollExpand's
@@ -49,7 +57,10 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
       const words = container.querySelectorAll<HTMLSpanElement>(".word");
 
       gsap.set(words, { opacity: 0.3 });
-      gsap.set(container, { opacity: 0 });
+      // Container itself must be visible in the non-embedded path — only the
+      // words fade individually. Previously this stayed at opacity: 0 forever
+      // because nothing tweened it back up, hiding the whole block.
+      gsap.set(container, { opacity: 1 });
 
       // Pin the section once it fills the viewport, then reveal each word
       // at full opacity, in reading order, as the user scrolls through the
@@ -77,14 +88,12 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
   const wordStyle = (globalIndex: number): React.CSSProperties | undefined => {
     if (!embedded) return undefined;
     const wp = wordProgress ?? 0;
-    const start = (globalIndex / ALL_WORDS.length) * 0.6;
+    const start = (globalIndex / TOTAL_WORDS) * 0.6;
     const t = smoothstep(start, start + 0.4, wp);
     return {
       opacity: 0.3 + 0.7 * t,
     };
   };
-
-  const wordEntries = COPY.flatMap((line) => line.text.split(" ").map((word) => word));
 
   return (
     <section
@@ -124,6 +133,21 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_50%,rgba(90,110,180,0.10),transparent_70%)]"
       />
 
+      {/* Top utility bar — studio link, edition mark, agency label */}
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-6 text-xs uppercase tracking-wide text-white/80 sm:px-10">
+        <a
+          href="#"
+          className="flex items-center gap-2 transition-colors hover:text-white"
+        >
+          <span aria-hidden className="text-sm leading-none">
+            +
+          </span>
+          <span>Inside The Studio</span>
+        </a>
+        <span className="text-white/60">(©19-26)</span>
+        <span>Digital Agency</span>
+      </div>
+
       <div
         ref={containerRef}
         className="relative z-10 max-w-[100rem] px-6 text-center"
@@ -131,19 +155,16 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
         <p className="relative isolate text-md font-inter uppercase leading-[1.08] tracking-wide sm:text-5xl md:text-6xl lg:text-6xl">
           {COPY.map((line, i) => {
             const words = line.text.split(" ");
+            const lineStart = LINE_START_INDEX[i];
             return (
               <span key={i} className="block">
                 {words.map((w, j) => {
-                  const globalIndex = wordEntries.findIndex((value, index) => {
-                    if (index === 0) return false;
-                    const prevCount = COPY.slice(0, i).reduce((sum, item) => sum + item.text.split(" ").length, 0);
-                    return index === prevCount + j;
-                  });
+                  const globalIndex = lineStart + j;
                   return (
                     <span
                       key={`${i}-${j}`}
                       className="word relative mr-[0.3em] inline-block text-white"
-                      style={wordStyle(globalIndex >= 0 ? globalIndex : 0)}
+                      style={wordStyle(globalIndex)}
                     >
                       {w}
                     </span>

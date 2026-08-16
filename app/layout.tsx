@@ -6,7 +6,7 @@ import "./globals.css";
 import Header from "../components/layout/Header";
 import SmoothScroll from "../providers/SmoothScroll";
 import Footer from "../components/layout/Footer";
-import GlobalLoader from "@/components/coming-soon/GlobalLoader";
+import GlobalLoader from "@/components/layout/GlobalLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,7 +59,7 @@ export default function RootLayout({
           {`if ("scrollRestoration" in window.history) { window.history.scrollRestoration = "manual"; } window.scrollTo(0, 0);`}
         </Script>
         <GlobalLoader />
-        <SmoothScroll duration={2.4} wheelMultiplier={0.6} anchorOffset={80}>
+        <SmoothScroll duration={0.8} wheelMultiplier={0.9} anchorOffset={80}>
           <Header />
           {children}
           <Footer />
