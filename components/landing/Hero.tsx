@@ -63,7 +63,7 @@ const Hero = () => (
         <div className="relative z-10 -mx-4 min-h-0 flex-1 overflow-hidden sm:-mx-6 md:-mx-10">
           <ThreeDImageSliderDemo />
         </div>
-        <div className="relative z-20 flex min-h-[28px] shrink-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 text-center text-[9px] text-black/60 sm:min-h-[32px] sm:gap-x-6 sm:pt-3 sm:text-[10px] md:gap-x-8 md:text-xs lg:gap-x-10">
+        <div className="relative z-20 flex min-h-[28px] shrink-0 flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 text-center text-[9px] text-white sm:min-h-[32px] sm:gap-x-6 sm:pt-3 sm:text-[10px] md:gap-x-8 md:text-xs lg:gap-x-10">
           {WORK_CATEGORIES.map((category) => (
             <span key={category.label} className="flex items-center gap-1.5 whitespace-nowrap sm:gap-2">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: category.color }} />

@@ -16,7 +16,7 @@ import QuadWordmark, {
   D_LETTER_SLOT,
   LETTER_STAGGER,
 } from "./QuadWordMark";
-import { useMotionValue } from "framer-motion";
+import DarkVeil from "./DarkVeil";
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 const smoothstep = (edge0: number, edge1: number, x: number) => {
@@ -90,8 +90,7 @@ const QuadScrollExpand = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const revealRef = useRef<HTMLDivElement>(null);
-  const revealMV = useMotionValue(0);
-  const wordMV = useMotionValue(0);
+  const darkVeilRef = useRef<HTMLDivElement>(null);
 
   const rectRef = useRef<DRect>({ left: 0, top: 0, width: 0, height: 0, originLeft: 0, originTop: 0 });
   const configRef = useRef({ scrollDistance, holdDistance, slideDistance, revealHoldDistance, smoothing, letterSplit, startRadius });
@@ -144,11 +143,11 @@ const QuadScrollExpand = ({
       revealRef.current.style.pointerEvents = sp > 0.5 ? "auto" : "none";
     }
 
-    // in applyProgress:
-    revealMV.set(sp);
-    wordMV.set(wp);
-    // setRevealProgress((prev) => (Math.abs(prev - sp) > 0.0009 ? sp : prev));
-    // setWordProgress((prev) => (Math.abs(prev - wp) > 0.0009 ? wp : prev));
+    // Threshold-gated so a sub-pixel scroll jitter doesn't trigger a
+    // React re-render every frame — only commit when it's moved enough
+    // to actually matter visually.
+    setRevealProgress((prev) => (Math.abs(prev - sp) > 0.0009 ? sp : prev));
+    setWordProgress((prev) => (Math.abs(prev - wp) > 0.0009 ? wp : prev));
 
     const c = configRef.current;
     const e = smoothstep(0, 1, p);
@@ -177,6 +176,13 @@ const QuadScrollExpand = ({
 
     if (imageRef.current) {
       imageRef.current.style.opacity = `${smoothstep(0.15, 0.9, p)}`;
+    }
+    if (darkVeilRef.current) {
+      // Stays hidden (revealing the plain white box, matching the other
+      // letters) through the initial letter-by-letter reveal and idle
+      // state — it only fades in once the box actually starts expanding,
+      // finishing before expandedContent itself fades in at 0.72+.
+      darkVeilRef.current.style.opacity = `${smoothstep(0.15, 0.7, p)}`;
     }
 
     const split = smoothstep(0, 0.75, p);
@@ -432,13 +438,38 @@ const QuadScrollExpand = ({
                       animation: `quad-d-reveal ${D_REVEAL_DURATION}s ${D_REVEAL_EASE} ${D_REVEAL_DELAY}s both`,
                     }}
                   >
-                    <img
+
+                    {/* Animated background for the carousel/expandedContent
+                        above — absolutely filling the D-box (not a fixed
+                        600px block) so it covers the box at every size
+                        instead of leaving gaps above/below on breakpoints
+                        taller or shorter than that. Starts fully transparent
+                        (see applyProgress) so the box reads as plain white,
+                        matching the other letters, until it actually starts
+                        expanding — otherwise this shows through immediately
+                        on load instead of only once the box grows. */}
+                    {/* <div
+                      ref={darkVeilRef}
+                      className="pointer-events-none absolute inset-0"
+                      style={{ opacity: 0 }}
+                    >
+                      <DarkVeil
+                        hueShift={0}
+                        noiseIntensity={0}
+                        scanlineIntensity={0}
+                        speed={1.6}
+                        scanlineFrequency={0}
+                        warpAmount={0}
+                      />
+                    </div> */}
+
+                    {/* <img
                       ref={imageRef}
                       src={imageSrc}
                       alt={imageAlt}
                       className="absolute inset-0 h-full w-full object-cover opacity-0 will-change-[opacity]"
                       draggable={false}
-                    />
+                    /> */}
                     {expandedContent ? (
                       <div
                         ref={contentRef}

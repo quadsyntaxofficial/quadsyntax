@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import { motion, useAnimationControls, useReducedMotion } from "framer-motion";
 
 const DEFAULT_DATA = [
   "https://images.unsplash.com/photo-1540968221243-29f5d70540bf?w=800&auto=format&fit=crop&q=60",
@@ -54,8 +54,51 @@ export default function ImageSlider3D({
   // rotation angles based on direction
   const rotationValues = rotationDirection === "left" ? [0, 360] : [360, 0];
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimationControls();
+
+  const spin = () =>
+    controls.start({
+      rotateY: rotationValues,
+      transition: { duration: animationDuration, ease: "linear", repeat: Infinity },
+    });
+
+  // The infinite rotateY loop otherwise keeps running (and compositing)
+  // even once this carousel has scrolled well out of view, or the tab is
+  // backgrounded — pause it in both cases, and simply resume the same loop
+  // rather than restarting from 0, so there's no visible jump.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    spin();
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !document.hidden) spin();
+        else controls.stop();
+      },
+      { threshold: 0 }
+    );
+    io.observe(el);
+
+    const onVisibilityChange = () => {
+      if (document.hidden) controls.stop();
+      else if (el.getBoundingClientRect().bottom > 0) spin();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      controls.stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animationDuration, rotationDirection]);
+
   return (
     <div
+      ref={containerRef}
       className={`grid w-full h-full max-w-full overflow-hidden place-items-center ${containerClassName}`}
       style={{
         perspective: perspective,
@@ -66,20 +109,16 @@ export default function ImageSlider3D({
         style={{
           transformStyle: "preserve-3d",
         }}
-        animate={{
-          rotateY: rotationValues,
-        }}
-        transition={{
-          duration: animationDuration,
-          ease: "linear",
-          repeat: Infinity,
-        }}
+        animate={controls}
       >
         {images.map((src, i) => (
           <img
             key={i}
             src={src}
             alt={`Slide ${i}`}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
             className={`col-start-1 row-start-1 object-cover rounded-[1.5em] ${imageClassName}`}
             style={{
               width: cardWidth,

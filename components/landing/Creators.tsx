@@ -75,9 +75,17 @@ const Creators = () => {
 
   const lenis = useLenis();
 
+  // Tracks section visibility without triggering re-renders on its own —
+  // read inside the interval/scroll callbacks below so the auto-rotate and
+  // the scroll-velocity blur effect both skip their work while the section
+  // is scrolled out of view, instead of running (and nudging framer-motion
+  // layout animations / GSAP tweens) forever regardless of visibility.
+  const sectionVisibleRef = useRef(true);
+
   useEffect(() => {
     if (paused || hovered) return;
     const id = setInterval(() => {
+      if (!sectionVisibleRef.current) return;
       setOrder((o) => [...o.slice(1), o[0]]);
     }, AUTO_INTERVAL_MS);
     return () => clearInterval(id);
@@ -116,6 +124,19 @@ const Creators = () => {
   const rightColWrapRef = useRef<HTMLDivElement>(null);
   const thumbsWrapRef = useRef<HTMLDivElement>(null);
   const statsWrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        sectionVisibleRef.current = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
 
   // onReveal timeline — everything except the stats, which now has its
   // own dedicated ScrollTrigger below so its timing tracks the stats row
@@ -239,6 +260,7 @@ const Creators = () => {
     if (!valueEls.length) return;
 
     const handleScroll = ({ velocity }: { velocity: number }) => {
+      if (!sectionVisibleRef.current) return;
       const blur = gsap.utils.clamp(0, 6, Math.abs(velocity) * 0.5);
       gsap.to(valueEls, {
         filter: `blur(${blur}px)`,
@@ -261,11 +283,16 @@ const Creators = () => {
       className="relative w-full overflow-hidden pt-28 pb-16 sm:pt-40 sm:pb-20 md:pt-52 lg:pt-60 lg:pb-24"
     >
       <div ref={watermarkRef} className="absolute inset-0 h-full w-full">
+        {/* No `priority` — this section is below the fold, and every image
+            used here (including this watermark) is already listed in
+            GlobalLoader's CRITICAL_ASSETS, so it's fully fetched and sitting
+            in cache before the page ever reveals. Dropping `priority` just
+            defers the *paint* work until scrolled near, not the loading. */}
         <Image
           src="/creators.png"
           alt=""
           fill
-          priority
+          loading="lazy"
           sizes="100vw"
           className="pointer-events-none h-full w-full object-contain object-top"
         />
@@ -295,7 +322,7 @@ const Creators = () => {
                   fill
                   sizes="(max-width: 1024px) 100vw, 46vw"
                   className="object-contain"
-                  priority
+                  loading="lazy"
                 />
               </motion.div>
             </div>
@@ -310,8 +337,8 @@ const Creators = () => {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="text-left lg:text-right"
                 >
-                  <h3 className="text-xl font-bold text-white xs:text-2xl sm:text-4xl md:text-5xl lg:text-6xl">{active.name}</h3>
-                  <p className="mt-1 text-base font-medium uppercase tracking-wide text-white/50 sm:text-xl md:text-2xl">
+                  <h3 className="text-xl font-bold text-white xs:text-2xl sm:text-4xl md:text-5xl lg:text-4xl">{active.name}</h3>
+                  <p className="mt-1 text-base font-medium uppercase tracking-wide text-white sm:text-xl md:text-2xl">
                     {active.role}
                   </p>
                   <p className="mt-4 max-w-xl text-sm text-white/60 sm:text-base md:text-lg lg:ml-auto">{active.bio}</p>
@@ -320,13 +347,13 @@ const Creators = () => {
                     <a
                       href={active.linkedin}
                       aria-label={`${active.name} on LinkedIn`}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/80 transition-colors hover:border-white/30 hover:text-white"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-[#EBEAEF] transition-colors hover:border-white/30 backdrop-blur-xl hover:text-white"
                     >
                       <LinkedinIcon />
                     </a>
                     <a
                       href={active.portfolio}
-                      className="rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-white/80 transition-colors hover:border-white/30 hover:text-white"
+                      className="rounded-full border border-white/15 px-6 py-2 text-sm font-medium text-[#EBEAEF] transition-colors hover:border-white/30 hover:text-white backdrop-blur-lg"
                     >
                       Portfolio
                     </a>

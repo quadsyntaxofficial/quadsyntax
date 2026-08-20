@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Image from "next/image";
@@ -47,6 +47,9 @@ const ROW_B: Tool[] = [
   { name: "Stripe", icon: "/tools/STRIPE.svg" },
 ];
 
+const MIN_HALF_WIDTH_PX = 2000;
+const APPROX_TAG_WIDTH_PX = 160;
+
 const MarqueeRow = ({
   tags,
   direction = "left",
@@ -56,11 +59,13 @@ const MarqueeRow = ({
   direction?: "left" | "right";
   rowRef?: React.Ref<HTMLDivElement>;
 }) => {
-  const MIN_HALF_WIDTH_PX = 2000;
-  const APPROX_TAG_WIDTH_PX = 160;
-  const repeats = Math.max(2, Math.ceil(MIN_HALF_WIDTH_PX / (tags.length * APPROX_TAG_WIDTH_PX)));
-  const half = Array.from({ length: repeats }, () => tags).flat();
-  const loop = [...half, ...half];
+  // Recomputing this array (and re-mounting 60+ children) on every parent
+  // render was pure waste — tags/direction never change after mount.
+  const loop = useMemo(() => {
+    const repeats = Math.max(2, Math.ceil(MIN_HALF_WIDTH_PX / (tags.length * APPROX_TAG_WIDTH_PX)));
+    const half = Array.from({ length: repeats }, () => tags).flat();
+    return [...half, ...half];
+  }, [tags]);
 
   return (
     <div
@@ -74,9 +79,19 @@ const MarqueeRow = ({
           key={`${tool.name}-${i}`}
           className="mr-3 inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-1 text-xs font-medium sm:text-sm"
         >
-          <span className="relative h-4 w-4 shrink-0 sm:h-5 sm:w-5">
-            <Image src={tool.icon} alt="" fill sizes="20px" className="object-contain" />
-          </span>
+          {/* Plain <img>, not next/image: these are small, already-optimized
+              SVG icons repeated dozens of times purely to fill the marquee
+              loop — next/image's per-instance lazy-load/observer overhead
+              costs far more here than it saves. */}
+          <img
+            src={tool.icon}
+            alt=""
+            width={20}
+            height={20}
+            loading="lazy"
+            decoding="async"
+            className="h-4 w-4 shrink-0 object-contain sm:h-5 sm:w-5"
+          />
           {tool.name}
         </span>
       ))}
@@ -241,6 +256,22 @@ const TechSuit = () => {
     return () => ctx.revert();
   }, []);
 
+  // Pause the (otherwise infinite) marquee CSS animation while the section
+  // is scrolled out of view — it keeps compositing for nothing otherwise.
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        section.classList.toggle("marquee-offscreen", !entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+
   // velocity-reactive marquee: scrolling faster nudges the loop speed up briefly
   // useEffect(() => {
   //   if (!lenis) return;
@@ -278,7 +309,7 @@ const TechSuit = () => {
         src="/TechSuit.png"
         alt=""
         fill
-        priority
+        loading="lazy"
         sizes="100vw"
         className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top"
       />
@@ -286,7 +317,7 @@ const TechSuit = () => {
       <div
         ref={leftMonoRef}
         aria-hidden
-        className="pointer-events-none absolute top-4/7 -left-24 z-0 w-[40vw] max-w-[420px] rotate-y-180 -translate-y-1/2 sm:-left-44 md:w-[26vw] will-change-transform"
+        className="pointer-events-none absolute top-4/7 -left-24 z-0 w-[40vw] max-w-[520px] rotate-y-180 -translate-y-1/3 sm:-left-54 md:w-[76vw] will-change-transform"
         style={{ aspectRatio: "1 / 1" }}
       >
         <Image src="/logo-monogram.svg" alt="" fill sizes="40vw" className="object-contain" />
@@ -295,7 +326,7 @@ const TechSuit = () => {
       <div
         ref={rightMonoRef}
         aria-hidden
-        className="pointer-events-none absolute top-4/7 -right-24 z-0 w-[40vw] max-w-[420px] -translate-y-1/2 sm:-right-44 md:w-[26vw] will-change-transform"
+        className="pointer-events-none absolute top-4/7 -right-24 z-0 w-[40vw] max-w-[520px] -translate-y-1/2 sm:-right-54 md:w-[76vw] will-change-transform"
         style={{ aspectRatio: "1 / 1" }}
       >
         <Image src="/logo-monogram.svg" alt="" fill sizes="40vw" className="object-contain" />
@@ -310,7 +341,7 @@ const TechSuit = () => {
             src="/characters-techsuit.png"
             alt=""
             fill
-            priority
+            loading="lazy"
             sizes="(max-width: 768px) 90vw, 900px"
             className="absolute z-30 object-contain object-top"
             style={{
@@ -320,13 +351,13 @@ const TechSuit = () => {
           />
           <div
             ref={marqueeARef}
-            className="pointer-events-none absolute inset-x-[-15%] top-[42%] z-20 rotate-[5deg] bg-[#902FF7] text-white overflow-hidden will-change-transform"
+            className="pointer-events-none absolute inset-x-[-15%] top-[42%] z-10 rotate-[5deg] bg-[#902FF7] text-white overflow-hidden will-change-transform"
           >
             <MarqueeRow tags={ROW_A} direction="left" rowRef={marqueeAInnerRef} />
           </div>
           <div
             ref={marqueeBRef}
-            className="pointer-events-none absolute inset-x-[-15%] top-[40%] z-20 rotate-[-5deg] bg-white/10 backdrop-blur-2xl text-white/90 ring-1 ring-white/10 overflow-hidden will-change-transform"
+            className="pointer-events-none absolute inset-x-[-15%] top-[40%] z-20 rotate-[-5deg] bg-white/10 backdrop-blur-sm text-white/90 ring-1 ring-white/10 overflow-hidden will-change-transform"
           >
             <MarqueeRow tags={ROW_B} direction="right" rowRef={marqueeBInnerRef} />
           </div>

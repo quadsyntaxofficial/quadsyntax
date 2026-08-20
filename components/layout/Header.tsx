@@ -1,11 +1,23 @@
 'use client'
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useSmoothNav } from "@/hooks/use-smooth-nav";
 
 const navLinks = ["Home", "About", "Services", "Team", "Projects"];
-const linkHref = (link: string) => `#${link.toLowerCase()}`;
+// "Projects" is a real route; the rest are sections on the home page. From
+// the home page those are plain in-page anchors (smooth-scrolled via
+// useSmoothNav, which only intercepts hrefs starting with "#"). From any
+// other route they need to be an actual link back to "/" (with the hash so
+// Next.js scrolls to the right section once it lands) — a bare "#about"
+// href from e.g. /projects just rewrites the current URL's hash and goes
+// nowhere, since there's no #about on that page.
+const linkHref = (link: string, onHome: boolean) => {
+  if (link === "Projects") return "/projects";
+  if (link === "Home") return onHome ? "#home" : "/";
+  return onHome ? `#${link.toLowerCase()}` : `/#${link.toLowerCase()}`;
+};
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -35,6 +47,12 @@ const Header = () => {
 
   const [light, setLight] = useState(false);
   const handleNav = useSmoothNav();
+  const pathname = usePathname();
+  const onProjects = pathname === "/projects";
+  // "Projects" is driven by the actual route, not click-tracked state, so
+  // it's correct however you arrive (link click, back/forward, direct
+  // load) — everything else still uses the click-tracked `activeLink`.
+  const displayActive = onProjects ? "Projects" : activeLink;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -116,9 +134,9 @@ const Header = () => {
           <Image
             src={light ? "/black-logo.svg" : "/white-logo.svg"}
             alt="QuadSyntax"
-            width={40}
-            height={40}
-            className="h-8 w-40 object-cover sm:h-10 sm:w-50"
+            width={285}
+            height={69}
+            className="h-8 w-40 object-cover sm:h-15 sm:w-70"
           />
         </div>
       </motion.div>
@@ -134,28 +152,35 @@ const Header = () => {
             light ? "text-black/60" : "text-white/60"
           }`}
         >
-          {navLinks.map((link) => (
-            <motion.a
-              key={link}
-              href={linkHref(link)}
-              variants={navItem}
-              onClick={(e) => {
-                setActiveLink(link);
-                handleNav(e, linkHref(link));
-              }}
-              className={`relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:transition-all after:duration-300 hover:after:w-full ${
-                light
-                  ? "hover:text-black after:bg-black"
-                  : "hover:text-white after:bg-white"
-              } ${
-                activeLink === link
-                  ? `after:w-full ${light ? "text-black" : "text-white"}`
-                  : "after:w-0"
-              }`}
-            >
-              {link}
-            </motion.a>
-          ))}
+          {navLinks.map((link) => {
+            const href = linkHref(link, !onProjects);
+            return (
+              <motion.a
+                key={link}
+                href={href}
+                variants={navItem}
+                onClick={(e) => {
+                  setActiveLink(link);
+                  // Only a true in-page anchor (i.e. we're already on the
+                  // home page) should be intercepted for the smooth-scroll;
+                  // anything else (Projects, or a cross-page link back to
+                  // "/") needs to actually navigate there.
+                  if (href.startsWith("#")) handleNav(e, href);
+                }}
+                className={`relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:transition-all after:duration-300 hover:after:w-full ${
+                  light
+                    ? "hover:text-black after:bg-black"
+                    : "hover:text-white after:bg-white"
+                } ${
+                  displayActive === link
+                    ? `after:w-full ${light ? "text-black" : "text-white"}`
+                    : "after:w-0"
+                }`}
+              >
+                {link}
+              </motion.a>
+            );
+          })}
         </nav>
 
         <motion.button
@@ -172,7 +197,7 @@ const Header = () => {
             animate={{ x: [0, 4, 0] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 1.8 }}
           >
-            <Image width={20} height={20} src="/svg/circle-arrow.svg" alt="" />
+            <Image width={16} height={15} src="/svg/circle-arrow.svg" alt="" className="h-5 w-5" />
           </motion.span>
         </motion.button>
 
@@ -207,22 +232,25 @@ const Header = () => {
             transition={{ duration: 0.25, ease: EASE }}
             className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-white/10 bg-black/90 px-4 py-4 font-inter text-sm text-white/70 backdrop-blur-xl md:hidden"
           >
-            {navLinks.map((link) => (
-              <a
-                key={link}
-                href={linkHref(link)}
-                onClick={(e) => {
-                  setActiveLink(link);
-                  setMenuOpen(false);
-                  handleNav(e, linkHref(link));
-                }}
-                className={`rounded-lg px-3 py-3 transition-colors hover:bg-white/5 hover:text-white ${
-                  activeLink === link ? "text-white" : ""
-                }`}
-              >
-                {link}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const href = linkHref(link, !onProjects);
+              return (
+                <a
+                  key={link}
+                  href={href}
+                  onClick={(e) => {
+                    setActiveLink(link);
+                    setMenuOpen(false);
+                    if (href.startsWith("#")) handleNav(e, href);
+                  }}
+                  className={`rounded-lg px-3 py-3 transition-colors hover:bg-white/5 hover:text-white ${
+                    displayActive === link ? "text-white" : ""
+                  }`}
+                >
+                  {link}
+                </a>
+              );
+            })}
           </motion.nav>
         )}
       </AnimatePresence>

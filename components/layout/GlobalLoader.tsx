@@ -1,8 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
+
+// Shown once per browser tab session — a full reload minutes later on the
+// same page doesn't need to replay the whole intro every time.
+const SESSION_KEY = "quadsyntax:loader-shown";
+const hasShownThisSession = () => {
+  try {
+    return sessionStorage.getItem(SESSION_KEY) === "1";
+  } catch {
+    return false; // storage blocked (private mode etc) — just show it
+  }
+};
+const markShownThisSession = () => {
+  try {
+    sessionStorage.setItem(SESSION_KEY, "1");
+  } catch {
+    // ignore — storage blocked
+  }
+};
 
 // Every image the app can paint on first render, so the loader's progress
 // (and its exit) is tied to real readiness — not a guess. Fonts are covered
@@ -47,6 +65,14 @@ export default function GlobalLoader() {
   const [displayPct, setDisplayPct] = useState(0);
   const canvasHostRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // Runs before paint — if the loader already played once this session,
+  // bail out immediately so there's no flash of it re-appearing, and the
+  // heavy three.js setup effect below never runs at all (its DOM host
+  // won't be mounted, so it early-returns).
+  useLayoutEffect(() => {
+    if (hasShownThisSession()) setVisible(false);
+  }, []);
 
   useEffect(() => {
     const host = canvasHostRef.current;
@@ -178,6 +204,7 @@ export default function GlobalLoader() {
       if (cancelled) return;
       bumpDisplay(100);
       rotate = false;
+      markShownThisSession();
 
       const exitTl = gsap.timeline({
         delay: 0.35,
@@ -217,9 +244,10 @@ export default function GlobalLoader() {
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-100 flex h-dvh w-dvw flex-col items-center justify-center overflow-hidden bg-[#020816]"
+      className="fixed inset-0 z-100 flex h-dvh w-dvw flex-col items-center justify-center overflow-hidden"
       style={{
-        background: "radial-gradient(circle at center, rgba(10, 65, 243, 0.18), rgba(2, 8, 22, 0.96) 55%, rgba(0, 0, 0, 1) 100%)",
+        background: "var(--body-gradient)",
+        backgroundAttachment: "fixed",
       }}
     >
       <div ref={canvasHostRef} className="absolute inset-0" />

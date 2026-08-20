@@ -352,6 +352,13 @@ html.lenis.lenis-stopped {
   animation-play-state: paused;
 }
 
+/* Toggled via IntersectionObserver — an infinite marquee scrolled far out
+   of view keeps animating (and compositing) for nothing otherwise. */
+.marquee-offscreen .animate-marquee-left,
+.marquee-offscreen .animate-marquee-right {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee-left,
   .animate-marquee-right {

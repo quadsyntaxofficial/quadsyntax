@@ -39,7 +39,12 @@ const SmoothScroll = ({
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
-    window.scrollTo(0, 0);
+    // Leave scroll position alone when the URL carries a hash (e.g. a nav
+    // link on another page sent the browser to "/#about") — the effect
+    // below scrolls to that target itself, once it actually exists and
+    // GlobalLoader has released the page.
+    const initialHash = window.location.hash;
+    if (!initialHash) window.scrollTo(0, 0);
 
     const lenisInstance = new Lenis({
       duration,
@@ -86,8 +91,32 @@ const SmoothScroll = ({
     };
     document.addEventListener("click", handleAnchorClick);
 
+    // Landed here with a hash in the URL (e.g. clicked "About" on the
+    // /projects page, which links back to "/#about"): GlobalLoader still
+    // holds the page at scroll 0 behind an overflow:hidden lock for its
+    // own intro, and the target section may not have measured/laid out
+    // yet either — so poll briefly rather than assuming either is ready
+    // the instant this effect runs.
+    let hashScrollTimer: ReturnType<typeof setTimeout> | undefined;
+    if (initialHash) {
+      const targetId = initialHash.slice(1);
+      let attempts = 0;
+      const tryScroll = () => {
+        attempts += 1;
+        const target = document.getElementById(targetId);
+        const loaderActive = document.body.style.overflow === "hidden";
+        if (target && !loaderActive) {
+          lenisInstance.scrollTo(target, { offset: -anchorOffset, immediate: false });
+          return;
+        }
+        if (attempts < 40) hashScrollTimer = setTimeout(tryScroll, 200);
+      };
+      tryScroll();
+    }
+
     return () => {
       gsap.ticker.remove(tick);
+      clearTimeout(hashScrollTimer);
       document.removeEventListener("click", handleAnchorClick);
       lenisInstance.destroy();
       lenisRef.current = null;

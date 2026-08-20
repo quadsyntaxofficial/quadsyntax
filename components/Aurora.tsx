@@ -162,6 +162,7 @@ export default function Aurora(props: AuroraProps) {
     if (!ctn) return;
 
     const renderer = new Renderer({
+      dpr: Math.min(window.devicePixelRatio, 2),
       alpha: true,
       premultipliedAlpha: true,
       antialias: true
@@ -181,6 +182,11 @@ export default function Aurora(props: AuroraProps) {
       const c = new Color(hex);
       return [c.r, c.g, c.b] as [number, number, number];
     });
+    // Cache of the last-computed color stops, keyed by the source array
+    // reference — avoids re-allocating Color objects/arrays every single
+    // animation frame when the prop hasn't actually changed.
+    let cachedStopsSrc: string[] | undefined;
+    let cachedStopsOut: [number, number, number][] = colorStopsArray;
 
     const program = new Program(gl, {
       vertex: VERT,
@@ -201,24 +207,45 @@ export default function Aurora(props: AuroraProps) {
       renderer.setSize(width, height);
       program.uniforms.uResolution.value = [width, height];
     }
-    window.addEventListener('resize', resize);
+    // ResizeObserver reacts to the container's own size (covers window
+    // resizes and layout-driven changes alike) instead of a blanket
+    // window-wide 'resize' listener per canvas.
+    const ro = new ResizeObserver(resize);
+    ro.observe(ctn);
 
     const mesh = new Mesh(gl, { geometry, program });
     ctn.appendChild(gl.canvas);
 
+    // Pause the render loop entirely while off-screen or the tab is
+    // backgrounded — the shader keeps costing GPU time otherwise even
+    // when nothing is visible.
+    let visible = true;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    io.observe(ctn);
+
     let animateId = 0;
     const update = (t: number) => {
       animateId = requestAnimationFrame(update);
+      if (!visible || document.hidden) return;
       const { time = t * 0.01, speed = 1.0 } = propsRef.current;
       if (program) {
         program.uniforms.uTime.value = time * speed * 0.1;
         program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
         program.uniforms.uBlend.value = propsRef.current.blend ?? blend;
         const stops = propsRef.current.colorStops ?? colorStops;
-        program.uniforms.uColorStops.value = stops.map((hex: string) => {
-          const c = new Color(hex);
-          return [c.r, c.g, c.b];
-        });
+        if (stops !== cachedStopsSrc) {
+          cachedStopsSrc = stops;
+          cachedStopsOut = stops.map((hex: string) => {
+            const c = new Color(hex);
+            return [c.r, c.g, c.b];
+          });
+        }
+        program.uniforms.uColorStops.value = cachedStopsOut;
         renderer.render({ scene: mesh });
       }
     };
@@ -228,7 +255,8 @@ export default function Aurora(props: AuroraProps) {
 
     return () => {
       cancelAnimationFrame(animateId);
-      window.removeEventListener('resize', resize);
+      ro.disconnect();
+      io.disconnect();
       if (ctn && gl.canvas.parentNode === ctn) {
         ctn.removeChild(gl.canvas);
       }

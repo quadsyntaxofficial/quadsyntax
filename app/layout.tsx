@@ -54,9 +54,13 @@ export default function RootLayout({
       <body className="min-h-screen overflow-x-hidden">
         {/* Runs before hydration — stops the browser from restoring a stale
             scroll position ahead of Lenis/ScrollTrigger's own measurements,
-            which is what causes the layout to visibly jump on reload. */}
+            which is what causes the layout to visibly jump on reload. Skips
+            the forced scroll-to-top when the URL carries a hash (e.g.
+            landing on /#about from a cross-page nav link) so there's
+            something for SmoothScroll's own hash handling to scroll to —
+            otherwise this always wins the race and the hash is dropped. */}
         <Script id="disable-scroll-restoration" strategy="beforeInteractive">
-          {`if ("scrollRestoration" in window.history) { window.history.scrollRestoration = "manual"; } window.scrollTo(0, 0);`}
+          {`if ("scrollRestoration" in window.history) { window.history.scrollRestoration = "manual"; } if (!window.location.hash) { window.scrollTo(0, 0); }`}
         </Script>
         <GlobalLoader />
         <SmoothScroll duration={0.8} wheelMultiplier={0.9} anchorOffset={80}>

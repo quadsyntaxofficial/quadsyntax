@@ -124,17 +124,17 @@ const SliderCard = forwardRef<HTMLDivElement, SliderCardProps>(
 
           {item.tags && item.tags.length > 0 && (
             <div
-              className="flex flex-wrap items-center"
+              className="grid w-full grid-cols-3 items-center"
               style={{ gap: `clamp(6px, calc(var(--w) * ${(11 / REF_W).toFixed(4)}), 11px)` }}
             >
               {item.tags.map((tag) => (
                 <button
                   key={tag}
                   type="button"
-                  className="cursor-pointer text-nowrap rounded-[84.9px] bg-white font-medium text-[#040A27]"
+                  className="cursor-pointer overflow-hidden text-ellipsis text-nowrap rounded-[84.9px] bg-white text-center font-medium text-[#040A27]"
                   style={{
-                    padding: "5px 10px",
-                    fontSize: `clamp(8px, calc(var(--w) * ${(9 / REF_W).toFixed(4)}), 9px)`,
+                    padding: "5px 8px",
+                    fontSize: `clamp(7px, calc(var(--w) * ${(9 / REF_W).toFixed(4)}), 9px)`,
                     lineHeight: "12.86px",
                   }}
                 >

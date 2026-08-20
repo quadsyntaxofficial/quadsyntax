@@ -7,12 +7,6 @@ import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
-const smoothstep = (edge0: number, edge1: number, x: number) => {
-  const t = clamp((x - edge0) / (edge1 - edge0 || 1e-6), 0, 1);
-  return t * t * (3 - 2 * t);
-};
-
 const COPY = [
   { text: "WE CREATE IMPACTFUL DIGITAL" },
   { text: "EXPERIENCES THROUGH THOUGHTFUL" },
@@ -73,7 +67,7 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
           pin: true,
           scrub: true,
         },
-      }).set(words, { opacity: 1, stagger: 0.1 }, 0.1);
+      }).to(words, { opacity: 1, duration: 0.4, ease: "power2.out", stagger: 0.1 }, 0.1);
     }, section);
 
     return () => ctx.revert();
@@ -85,13 +79,20 @@ const About = ({ revealProgress, wordProgress }: AboutProps) => {
   // trigger point in the normal sense. wordProgress only starts advancing
   // once this section already fills the whole screen (see QuadScrollExpand's
   // readWordProgress), so this never runs while still mid-slide/covered.
+  //
+  // Matches the non-embedded path's own reveal: each word crosses its own
+  // threshold one at a time (not the old smoothstep window, which was wide
+  // enough that dozens of words faded in together, reading as whole lines).
+  // Unlike a plain threshold flip, the CSS transition below still gives
+  // each crossing a short, smooth fade instead of an instant snap — same
+  // duration as the non-embedded path's own tween.
   const wordStyle = (globalIndex: number): React.CSSProperties | undefined => {
     if (!embedded) return undefined;
     const wp = wordProgress ?? 0;
-    const start = (globalIndex / TOTAL_WORDS) * 0.6;
-    const t = smoothstep(start, start + 0.4, wp);
+    const threshold = globalIndex / TOTAL_WORDS;
     return {
-      opacity: 0.3 + 0.7 * t,
+      opacity: wp > threshold ? 1 : 0.3,
+      transition: "opacity 0.4s ease-out",
     };
   };
 

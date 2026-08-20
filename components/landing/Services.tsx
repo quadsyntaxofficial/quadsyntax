@@ -92,7 +92,7 @@ const Services = () => {
         src="/SERVICES.png"
         alt="Services"
         fill
-        priority
+        loading="lazy"
         sizes="100vw"
         className="absolute h-full w-full object-contain object-top"
       />
